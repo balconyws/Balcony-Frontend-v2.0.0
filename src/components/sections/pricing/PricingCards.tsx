@@ -173,15 +173,16 @@ const PricingCards: React.FC<Props> = ({ plans }: Props) => {
                   <Separator className="mt-[18px] bg-[#D4E0ED]" />
                 </CardContent>
                 <CardFooter className="mt-8 flex flex-col gap-3">
-                  {p.description.split(',').map((d: string, index: number) => (
-                    <div key={index}>
-                      <div className="flex justify-start items-center gap-3">
-                        <CircleCheckBigIcon className="text-primary w-4 h-4" />
-                        <p className="text-[13px] leading-[21px]">{d}</p>
+                  {p.description &&
+                    p.description.split(',').map((d: string, index: number) => (
+                      <div key={index}>
+                        <div className="flex justify-start items-center gap-3">
+                          <CircleCheckBigIcon className="text-primary w-4 h-4" />
+                          <p className="text-[13px] leading-[21px]">{d}</p>
+                        </div>
+                        {index === 0 && <Separator className="mt-3" />}
                       </div>
-                      {index === 0 && <Separator className="mt-3" />}
-                    </div>
-                  ))}
+                    ))}
                 </CardFooter>
               </>
             )}

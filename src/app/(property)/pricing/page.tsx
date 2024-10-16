@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { Spinner } from '@/components/ui/Spinner';
 import { PricingCards } from '@/components/sections';
-import { ErrorMessage, Footer } from '@/components/common';
+import { Footer } from '@/components/common';
 import {
   subscriptionActions,
   useAppDispatch,
@@ -19,7 +19,7 @@ type Props = object;
 
 const Pricing: NextPage<Props> = () => {
   const dispatch = useAppDispatch();
-  const { error, plans } = useAppSelector(subscriptionSlice.selectSubscription);
+  const { plans } = useAppSelector(subscriptionSlice.selectSubscription);
   const { isAuthenticated } = useAppSelector(authSlice.selectAuth);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -65,7 +65,7 @@ const Pricing: NextPage<Props> = () => {
     );
   }
 
-  return <ErrorMessage errorCode={500} message={error?.message || 'something went wrong'} />;
+  return;
 };
 
 export default Pricing;
