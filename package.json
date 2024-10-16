@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "echo 🌍 Configuring Environment for development... && nodemon server.js",
     "build": "echo 🔨 Building... && next build",
-    "start": "echo 🚀 Starting Server... && NODE_ENV=production node server.js",
+    "start": "echo 🚀 Starting Server... && cross-env NODE_ENV=production nodemon server.js",
     "standalone": "echo 🚀 Starting Server... && NODE_ENV=production node .next/standalone/server.js",
     "prepare": "echo 🐶 Husky preparing... && husky",
     "format": "echo ✨ Prettier formatting... && prettier --write .",
@@ -70,6 +70,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
     "country-state-city": "3.2.1",
+    "cross-env": "7.0.3",
     "crypto-js": "4.2.0",
     "date-fns": "3.6.0",
     "dotenv": "16.4.5",
