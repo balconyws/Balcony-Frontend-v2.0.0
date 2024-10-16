@@ -1,0 +1,14 @@
+{
+  "ignore": ["*"],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "events": {
+    "start": "echo 🚀 Starting Development Server...",
+    "crash": "echo '💥 Oops! Application crashed! Please fix me :('",
+    "exit": "echo 👋 Application exited.",
+    "restart": "echo 🔄 Restarting...",
+    "config:update": "echo 🛠️ Config updated."
+  },
+  "verbose": false
+}
