@@ -3136,6 +3136,7 @@ balanced-match@^1.0.0:
     clsx "^2.1.1"
     cmdk "1.0.0"
     country-state-city "3.2.1"
+    cross-env "7.0.3"
     crypto-js "4.2.0"
     date-fns "3.6.0"
     dotenv "16.4.5"
@@ -3150,6 +3151,7 @@ balanced-match@^1.0.0:
     lucide-react "0.436.0"
     next "14.2.5"
     next-auth "5.0.0-beta.20"
+    pdf-lib "1.17.1"
     react "^18"
     react-audio-voice-recorder "2.2.0"
     react-day-picker "8.10.1"
@@ -3789,7 +3791,14 @@ create-require@^1.1.0:
   resolved "https://registry.npmjs.org/create-require/-/create-require-1.1.1.tgz"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
 
-cross-spawn@^7.0.0, cross-spawn@^7.0.2, cross-spawn@^7.0.3:
+cross-env@7.0.3:
+  version "7.0.3"
+  resolved "https://registry.npmjs.org/cross-env/-/cross-env-7.0.3.tgz"
+  integrity sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==
+  dependencies:
+    cross-spawn "^7.0.1"
+
+cross-spawn@^7.0.0, cross-spawn@^7.0.1, cross-spawn@^7.0.2, cross-spawn@^7.0.3:
   version "7.0.3"
   resolved "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.3.tgz"
   integrity sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==

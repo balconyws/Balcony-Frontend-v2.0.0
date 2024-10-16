@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   subscriptionActions,
   cardActions,
+  authActions,
   useAppDispatch,
   subscriptionSlice,
   authSlice,
@@ -104,7 +105,9 @@ const PricingCards: React.FC<Props> = ({ plans }: Props) => {
         state => {
           const { isFailed, error } = state.subscription;
           if (!isFailed) {
-            redirect(sourcePath || '/host/dashboard/property');
+            dispatch(authActions.reAuthenticate()).then(() =>
+              redirect(sourcePath || '/host/dashboard/property')
+            );
           } else {
             setResError(error?.message || 'something went wrong');
           }
