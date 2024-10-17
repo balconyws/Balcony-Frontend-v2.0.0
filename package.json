@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "echo 🌍 Configuring Environment for development... && nodemon server.js",
     "build": "echo 🔨 Building... && next build",
-    "start": "echo 🚀 Starting Server... && cross-env NODE_ENV=production nodemon server.js",
+    "start": "echo 🚀 Starting Server... && cross-env NODE_ENV=production node server.js",
     "standalone": "echo 🚀 Starting Server... && NODE_ENV=production node .next/standalone/server.js",
     "prepare": "echo 🐶 Husky preparing... && husky",
     "format": "echo ✨ Prettier formatting... && prettier --write .",
@@ -21,7 +21,7 @@
     "lint:fix": "echo 🔧 ESlint fixing... &&  eslint . --quiet --fix",
     "test": "echo 🧪 Jest testing... && jest --coverage -o -u --passWithNoTests",
     "test:watch": "echo 👀 Jest watching... && jest --watch",
-    "commit": "echo ✍️ Formatting... && npm run format && npm run lint:fix && echo 📦 Git status... && git status && echo ➕ Git adding... && git add --all && echo 📝 Git committing... && git-cz && echo 🚀 Git pushing... && git push -u origin main",
+    "commit": "echo ✍️ Formatting... && npm run format && npm run lint:fix && echo 📦 Git status... && git status && echo ➕ Git adding... && git add --all && echo 📝 Git committing... && git-cz && echo 🚀 Git pushing... && git push -u origin development",
     "lint-staged": "echo 🎉 Running lint-staged.. && lint-staged"
   },
   "config": {

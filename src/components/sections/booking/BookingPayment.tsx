@@ -1,25 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 import { Navigation } from '@/contexts';
-import { Workspace } from '@/types';
+import { bookingSlice, useAppSelector } from '@/redux';
 import { BookingPaymentForm } from '@/components/forms';
 
 type Props = object;
 
 const BookingPayment: React.FC<Props> = () => {
-  const { direction, pageVariants, dataPassed } = Navigation.useNavigation();
-  const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [selectedDates, setSelectedDates] = useState<{ from: Date; to: Date } | null>(null);
-
-  useEffect(() => {
-    if (dataPassed && dataPassed.workspace && dataPassed.selectedDates) {
-      setWorkspace(dataPassed.workspace);
-      setSelectedDates(dataPassed.selectedDates);
-    }
-  }, [dataPassed]);
+  const { direction, pageVariants } = Navigation.useNavigation();
+  const { selectedBooking } = useAppSelector(bookingSlice.selectBooking);
 
   return (
     <div className="w-full h-full px-6">
@@ -31,8 +22,14 @@ const BookingPayment: React.FC<Props> = () => {
           animate="animate"
           exit="exit"
           className="w-full h-full">
-          {workspace && selectedDates && (
-            <BookingPaymentForm workspace={workspace} selectedDates={selectedDates} />
+          {selectedBooking && (
+            <BookingPaymentForm
+              workspace={selectedBooking.workspace}
+              selectedDates={{
+                from: new Date(selectedBooking.selectedDates.from),
+                to: new Date(selectedBooking.selectedDates.to),
+              }}
+            />
           )}
         </motion.div>
       </div>

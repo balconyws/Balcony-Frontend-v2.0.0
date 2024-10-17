@@ -329,7 +329,10 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
                 <SlidingTabContent
                   direction={getDirection('card')}
                   animate={!isFirstRender.current}>
-                  <DefaultCard feeMsg="There is a 2.9% + 30¢ processing fee" />
+                  <DefaultCard
+                    forceToWallet={false}
+                    feeMsg="There is a 2.9% + 30¢ processing fee"
+                  />
                 </SlidingTabContent>
               </TabsContent>
               <TabsContent value="ach" className="-mx-1 px-1 overflow-hidden">

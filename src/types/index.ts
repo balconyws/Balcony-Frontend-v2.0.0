@@ -377,6 +377,10 @@ export type BookingState = {
   history?: Booking[];
   pagination?: Pagination;
   bookingDetail?: Booking;
+  selectedBooking?: {
+    workspace: Workspace;
+    selectedDates: { from: string; to: string };
+  };
   bookedDates?: Date[];
   error?: { key: string; message: string };
 };

@@ -214,6 +214,7 @@ const PricingCards: React.FC<Props> = ({ plans }: Props) => {
               </DialogHeader>
               <Separator />
               <DefaultCard
+                forceToWallet={true}
                 onClickUpdate={() => {
                   setOpen(false);
                   setSelectedPlan(null);

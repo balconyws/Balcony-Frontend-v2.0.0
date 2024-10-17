@@ -3,7 +3,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { RootState } from '@/redux';
-import { BookingState, Booking, Pagination } from '@/types';
+import { BookingState, Booking, Pagination, Workspace } from '@/types';
 
 const initialState: BookingState = {
   loading: false,
@@ -51,6 +51,23 @@ const bookingSlice = createSlice({
       state.error = undefined;
       state.isFailed = false;
     },
+    setSelectedBooking: (
+      state,
+      action: PayloadAction<{
+        booking: {
+          workspace: Workspace;
+          selectedDates: {
+            from: string;
+            to: string;
+          };
+        };
+      }>
+    ) => {
+      state.loading = false;
+      state.selectedBooking = action.payload.booking;
+      state.error = undefined;
+      state.isFailed = false;
+    },
     setBookedDates: (state, action: PayloadAction<{ dates: Date[] }>) => {
       state.loading = false;
       state.bookedDates = action.payload.dates;
@@ -76,6 +93,7 @@ export const {
   setHistory,
   setPagination,
   setBookingDetail,
+  setSelectedBooking,
   setBookedDates,
   setError,
   clearError,

@@ -10,11 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/Spinner';
 
 type Props = {
+  forceToWallet: boolean;
   feeMsg?: string;
   onClickUpdate?: () => void;
 };
 
-const DefaultCard = ({ feeMsg, onClickUpdate }: Props) => {
+const DefaultCard = ({ forceToWallet, feeMsg, onClickUpdate }: Props) => {
   const dispatch = useAppDispatch();
   const { loading, cards } = useAppSelector(cardSlice.selectCard);
   const { pushToStack } = Navigation.useNavigation();
@@ -24,10 +25,10 @@ const DefaultCard = ({ feeMsg, onClickUpdate }: Props) => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (cards && cards.length === 0) {
+    if (forceToWallet && cards && cards.length === 0) {
       pushToStack('wallet');
     }
-  }, [cards, pushToStack]);
+  }, [cards, forceToWallet, pushToStack]);
 
   if (loading) {
     <Spinner show={true} size="medium" />;
@@ -64,7 +65,15 @@ const DefaultCard = ({ feeMsg, onClickUpdate }: Props) => {
             </div>
           ))
       ) : (
-        <p className="w-full text-sm">No card yet!</p>
+        <div className="flex justify-between items-start">
+          <p className="w-full text-[12px]">No card yet!</p>
+          <Button
+            variant="underline"
+            className="text-[12px] font-normal border-none underline w-fit text-center"
+            onClick={() => pushToStack('wallet')}>
+            add
+          </Button>
+        </div>
       )}
     </>
   );
