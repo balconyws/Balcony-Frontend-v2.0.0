@@ -24,15 +24,48 @@ const ticketSlice = createSlice({
       state.error = undefined;
       state.isFailed = false;
     },
-    setTickets: (state, action: PayloadAction<{ tickets: Ticket[] }>) => {
+    setTicketsType: (state, action: PayloadAction<{ ticketType: 'workspaces' | 'properties' }>) => {
+      state.ticketsType = action.payload.ticketType;
+    },
+    setUserTickets: (
+      state,
+      action: PayloadAction<{
+        userTickets: {
+          tickets: Ticket[];
+          history: Ticket[];
+        };
+      }>
+    ) => {
       state.loading = false;
-      state.tickets = action.payload.tickets;
+      state.userTickets = action.payload.userTickets;
       state.error = undefined;
       state.isFailed = false;
     },
-    setHistory: (state, action: PayloadAction<{ history: Ticket[] }>) => {
+    setWorkspaceTickets: (
+      state,
+      action: PayloadAction<{
+        workspaceTickets: {
+          tickets: Ticket[];
+          history: Ticket[];
+        };
+      }>
+    ) => {
       state.loading = false;
-      state.history = action.payload.history;
+      state.workspaceTickets = action.payload.workspaceTickets;
+      state.error = undefined;
+      state.isFailed = false;
+    },
+    setPropertyTickets: (
+      state,
+      action: PayloadAction<{
+        propertyTickets: {
+          tickets: Ticket[];
+          history: Ticket[];
+        };
+      }>
+    ) => {
+      state.loading = false;
+      state.propertyTickets = action.payload.propertyTickets;
       state.error = undefined;
       state.isFailed = false;
     },
@@ -56,9 +89,11 @@ const ticketSlice = createSlice({
 export const {
   startLoading,
   stopLoading,
-  setTickets,
-  setHistory,
+  setUserTickets,
+  setWorkspaceTickets,
+  setPropertyTickets,
   setTicketDetail,
+  setTicketsType,
   setError,
   clearError,
 } = ticketSlice.actions;

@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 
 import { Navigation } from '@/contexts';
 import { Tenant } from '@/types';
-import { useAppDispatch, tenantSlice, useAppSelector } from '@/redux';
+import { useAppDispatch, tenantSlice, useAppSelector, tenantActions } from '@/redux';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable } from '@/components/common';
@@ -14,8 +14,13 @@ type Props = object;
 
 const AwaitingReview: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
-  const { loading, awaiting } = useAppSelector(tenantSlice.selectTenant);
+  const { awaiting } = useAppSelector(tenantSlice.selectTenant);
   const { pushToStack } = Navigation.useNavigation();
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    dispatch(tenantActions.getUserAsTenants({ status: 'awaiting' })).then(() => setLoading(false));
+  }, [dispatch]);
 
   const goToTenantPayment = useCallback(
     (tenant: Tenant) => {

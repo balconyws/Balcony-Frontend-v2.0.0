@@ -1,5 +1,6 @@
 import { NextPage } from 'next';
 import Link from 'next/link';
+import { format } from 'date-fns';
 
 import { Footer } from '@/components/common';
 
@@ -16,13 +17,14 @@ const Policy: NextPage<Props> = () => (
           Your privacy is important to us. It is Balcony&apos;s policy to respect your privacy and
           comply with any applicable requirements regarding any personal information we may collect
           about you, including across our website,{' '}
-          <Link href="https://www.balcony.ws/" className="underline">
-            https://www.balcony.ws/
+          <Link href="https://www.balcony.co/" className="underline">
+            https://www.balcony.co/
           </Link>{' '}
           , and other sites we own and operate.
         </p>
         <p className="mt-5 text-[20px]">
-          This policy is effective as of 21 February 2021 and was last updated on 21 February 2021.
+          This policy is effective as of 21 February 2021 and was last updated on{' '}
+          {format(new Date(), 'dd MMMM yyyy')}.
         </p>
         <h2 className="mt-5 text-[30px]">Information We Collect</h2>
         <p className="mt-7 text-[20px]">
@@ -254,7 +256,7 @@ const Policy: NextPage<Props> = () => (
           following details:
         </p>
         <p className="mt-10 text-[20px]">
-          Balcony <br /> <Link href="mailto:info@balcony.ws">info@balcony.ws</Link>
+          Balcony <br /> <Link href="mailto:info@balcony.co">info@balcony.co</Link>
         </p>
         <p className="mt-14 text-[20px]">Privacy Policy</p>
       </div>

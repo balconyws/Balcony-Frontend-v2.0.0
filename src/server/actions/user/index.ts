@@ -246,6 +246,7 @@ export const FindUserById = async (payload: {
 
 export const GetHostBalance = async (payload: {
   hostId: string;
+  type: 'workspaces' | 'properties';
 }): Promise<
   | {
       data: { balance: Balance };
@@ -258,10 +259,15 @@ export const GetHostBalance = async (payload: {
     }
     const backendUrl = process.env.BACKEND_URL;
     const headers = getCookies();
-    const response = await axios.get(`${backendUrl}/api/v2/user/balance/${payload.hostId}`, {
-      headers,
-      withCredentials: true,
-    });
+    const params: URLSearchParams = new URLSearchParams();
+    params.append('type', payload.type);
+    const response = await axios.get(
+      `${backendUrl}/api/v2/user/balance/${payload.hostId}?${params.toString()}`,
+      {
+        headers,
+        withCredentials: true,
+      }
+    );
     if (response && response.data && response.data.success) {
       setCookies(response.headers['set-cookie']);
       return {
@@ -289,7 +295,9 @@ export const GetHostBalance = async (payload: {
   }
 };
 
-export const CreateOnBoardingAccount = async (): Promise<
+export const CreateOnBoardingAccount = async (payload: {
+  type: 'workspaces' | 'properties';
+}): Promise<
   | {
       data: { url: string };
     }
@@ -301,10 +309,13 @@ export const CreateOnBoardingAccount = async (): Promise<
     }
     const backendUrl = process.env.BACKEND_URL;
     const headers = getCookies();
-    const response = await axios.get(`${backendUrl}/api/v2/user/onboarding-account`, {
-      headers,
-      withCredentials: true,
-    });
+    const response = await axios.get(
+      `${backendUrl}/api/v2/user/onboarding-account/${payload.type}`,
+      {
+        headers,
+        withCredentials: true,
+      }
+    );
     if (response && response.data && response.data.success) {
       setCookies(response.headers['set-cookie']);
       return { data: { url: response.data.url } };

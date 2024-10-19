@@ -7,14 +7,16 @@ import { UserServerActions } from '@/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-type Props = object;
+type Props = {
+  type: 'workspaces' | 'properties';
+};
 
-const DashboardPayoutCard: React.FC<Props> = () => {
+const DashboardPayoutCard: React.FC<Props> = ({ type }: Props) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const handlePayout = async () => {
     setLoading(true);
-    const res = await UserServerActions.CreateOnBoardingAccount();
+    const res = await UserServerActions.CreateOnBoardingAccount({ type });
     if ('data' in res) {
       const newTab = window.open(res.data.url, '_blank');
       if (newTab) {

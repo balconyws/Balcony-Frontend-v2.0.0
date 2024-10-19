@@ -48,6 +48,7 @@ export const acceptBooking = createAsyncThunk(
           ? {
               ...b,
               acceptance: 'manually accepted',
+              status: 'in progress',
             }
           : b
       );
@@ -68,20 +69,24 @@ export const rejectBooking = createAsyncThunk(
     },
     { dispatch, getState }
   ) => {
-    const { setInProgress, setError } = bookingSlice;
+    const { setInProgress, setHistory, setError } = bookingSlice;
     const res = await BookingServerActions.RejectBooking(payload);
     if ('data' in res && res.data.success) {
       const state = getState() as RootState;
-      const prev = state.booking.inProgress || ([] as Booking[]);
-      const updatedBooking: Booking[] = prev.map(b =>
-        b._id === payload.bookingId
-          ? {
-              ...b,
-              acceptance: 'rejected',
-            }
-          : b
-      );
-      dispatch(setInProgress({ bookings: updatedBooking }));
+      const inProgressBookings = state.booking.inProgress || ([] as Booking[]);
+      const historyBookings = state.booking.history || ([] as Booking[]);
+      const rejectedBooking = inProgressBookings.find(b => b._id === payload.bookingId);
+      if (rejectedBooking) {
+        const updatedRejectedBooking: Booking = {
+          ...rejectedBooking,
+          acceptance: 'rejected',
+          status: 'canceled',
+        };
+        const updatedInProgress = inProgressBookings.filter(b => b._id !== payload.bookingId);
+        const updatedHistory = [...historyBookings, updatedRejectedBooking];
+        dispatch(setInProgress({ bookings: updatedInProgress }));
+        dispatch(setHistory({ bookings: updatedHistory }));
+      }
     } else if ('error' in res) {
       dispatch(setError({ key: res.error.key, message: res.error.message }));
     } else {
@@ -269,8 +274,7 @@ export const getBookedDates = createAsyncThunk(
     dispatch(startLoading());
     const res = await BookingServerActions.GetBookedDates();
     if ('data' in res) {
-      const dateObjects = res.data.dates.map((d: string) => new Date(d));
-      dispatch(setBookedDates({ dates: dateObjects }));
+      dispatch(setBookedDates({ dates: res.data.dates }));
     } else if ('error' in res) {
       dispatch(setError({ key: res.error.key, message: res.error.message }));
     } else {
@@ -287,13 +291,26 @@ export const refundBooking = createAsyncThunk(
       amount: number;
       type: PromoType;
     },
-    { dispatch }
+    { dispatch, getState }
   ) => {
-    const { startLoading, stopLoading, setError } = bookingSlice;
+    const { startLoading, setInProgress, setHistory, setError } = bookingSlice;
     dispatch(startLoading());
     const res = await BookingServerActions.RefundBooking(payload);
     if ('data' in res && res.data.success) {
-      dispatch(stopLoading());
+      const state = getState() as RootState;
+      const inProgressBookings = state.booking.inProgress || ([] as Booking[]);
+      const historyBookings = state.booking.history || ([] as Booking[]);
+      const refundedBooking = inProgressBookings.find(b => b._id === payload.bookingId);
+      if (refundedBooking) {
+        const updatedRefundedBooking: Booking = {
+          ...refundedBooking,
+          status: 'partially refunded',
+        };
+        const updatedInProgress = inProgressBookings.filter(b => b._id !== payload.bookingId);
+        const updatedHistory = [...historyBookings, updatedRefundedBooking];
+        dispatch(setInProgress({ bookings: updatedInProgress }));
+        dispatch(setHistory({ bookings: updatedHistory }));
+      }
     } else if ('error' in res) {
       dispatch(setError({ key: res.error.key, message: res.error.message }));
     } else {
@@ -308,12 +325,25 @@ export const cancelBookingByHost = createAsyncThunk(
     payload: {
       bookingId: string;
     },
-    { dispatch }
+    { dispatch, getState }
   ) => {
-    const { stopLoading, setError } = bookingSlice;
+    const { setInProgress, setHistory, setError } = bookingSlice;
     const res = await BookingServerActions.CancelBookingByHost(payload);
     if ('data' in res && res.data.success) {
-      dispatch(stopLoading());
+      const state = getState() as RootState;
+      const inProgressBookings = state.booking.inProgress || ([] as Booking[]);
+      const historyBookings = state.booking.history || ([] as Booking[]);
+      const canceledBooking = inProgressBookings.find(b => b._id === payload.bookingId);
+      if (canceledBooking) {
+        const updatedCanceledBooking: Booking = {
+          ...canceledBooking,
+          status: 'canceled',
+        };
+        const updatedInProgress = inProgressBookings.filter(b => b._id !== payload.bookingId);
+        const updatedHistory = [...historyBookings, updatedCanceledBooking];
+        dispatch(setInProgress({ bookings: updatedInProgress }));
+        dispatch(setHistory({ bookings: updatedHistory }));
+      }
     } else if ('error' in res) {
       dispatch(setError({ key: res.error.key, message: res.error.message }));
     } else {
@@ -328,13 +358,23 @@ export const cancelBookingByUser = createAsyncThunk(
     payload: {
       bookingId: string;
     },
-    { dispatch }
+    { dispatch, getState }
   ) => {
-    const { startLoading, stopLoading, setError } = bookingSlice;
+    const { startLoading, setInProgress, setError } = bookingSlice;
     dispatch(startLoading());
     const res = await BookingServerActions.CancelBookingByUser(payload);
     if ('data' in res && res.data.success) {
-      dispatch(stopLoading());
+      const state = getState() as RootState;
+      const prev = state.booking.inProgress || ([] as Booking[]);
+      const updatedBooking: Booking[] = prev.map(b =>
+        b._id === payload.bookingId
+          ? {
+              ...b,
+              status: 'canceled',
+            }
+          : b
+      );
+      dispatch(setInProgress({ bookings: updatedBooking }));
     } else if ('error' in res) {
       dispatch(setError({ key: res.error.key, message: res.error.message }));
     } else {

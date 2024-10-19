@@ -95,14 +95,14 @@ const RentDetail: React.FC<Props> = () => {
                     <div className="flex flex-col justify-start items-start gap-3">
                       <p className="text-[13px] font-semibold leading-5">lease start date</p>
                       <p className="text-[#71717A] text-[13px] leading-5">
-                        {tenantDetail.agreement &&
+                        {tenantDetail?.agreement?.leaseStartDate &&
                           format(new Date(tenantDetail.agreement.leaseStartDate), 'dd/MM/yyyy')}
                       </p>
                     </div>
                     <div className="flex flex-col justify-start items-start gap-3">
                       <p className="text-[13px] font-semibold leading-5">lease end date</p>
                       <p className="text-[#71717A] text-[13px] leading-5">
-                        {tenantDetail.agreement &&
+                        {tenantDetail?.agreement?.leaseEndDate &&
                           format(new Date(tenantDetail.agreement.leaseEndDate), 'dd/MM/yyyy')}
                       </p>
                     </div>

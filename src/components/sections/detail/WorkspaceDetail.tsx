@@ -5,22 +5,24 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { DateRange } from 'react-day-picker';
+import { RWebShare } from 'react-web-share';
 import { ShareIcon } from 'lucide-react';
 
 import { Navigation } from '@/contexts';
 import { Workspace } from '@/types';
-import { chatActions, useAppDispatch, chatSlice, useAppSelector, waitForDispatch } from '@/redux';
 import { SingleColumnTable, Map } from '@/components/common';
 import { Separator } from '@/components/ui/separator';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
+import { imagePlaceholder, formatAddress, formatWorkspaceTimes, formatCurrency } from '@/helper';
 import {
-  imagePlaceholder,
-  formatAddress,
-  formatWorkspaceTimes,
-  areSelectedDaysAvailable,
-  formatCurrency,
-} from '@/helper';
+  chatActions,
+  useAppDispatch,
+  bookingSlice,
+  chatSlice,
+  useAppSelector,
+  waitForDispatch,
+} from '@/redux';
 
 const formatWorkspaceOther = (workspace: Workspace): string[] => {
   const { isCoWorkingWorkspace, isIndoorSpace, isOutdoorSpace } = workspace.other;
@@ -66,13 +68,15 @@ const WorkspaceDetail: React.FC<Props> = ({ data, apiKey, styleId }: Props) => {
     }
     const from = selectedDates.from;
     const to = selectedDates.to || from;
-    if (!areSelectedDaysAvailable({ from, to }, data.times)) {
-      setResError(
-        'selected dates are not available for the service, please choose different dates'
-      );
-      return;
-    }
-    pushToStack('payment booking', { workspace: data, selectedDates: { from, to } });
+    dispatch(
+      bookingSlice.setSelectedBooking({
+        booking: {
+          workspace: data,
+          selectedDates: { from: from.toISOString(), to: to.toISOString() },
+        },
+      })
+    );
+    pushToStack('payment booking');
     setDirection('none');
   };
 
@@ -181,15 +185,20 @@ const WorkspaceDetail: React.FC<Props> = ({ data, apiKey, styleId }: Props) => {
               <Image src="/assets/icons/ratings-2.svg" alt="rating" width={117} height={23} />
               <p className="text-[17px]">(1)</p>
             </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="m-0 p-0"
-              onClick={() =>
-                window.open(`https://web.whatsapp.com/send?text=${window.location.href}`)
-              }>
-              <ShareIcon className="text-primary w-6 h-6" />
-            </Button>
+            <RWebShare
+              data={{
+                title: data.info.name,
+                text: data.info.summary
+                  ? data.info.summary.length > 100
+                    ? data.info.summary.slice(0, 100) + '...'
+                    : data.info.summary
+                  : data.info.name,
+                url: `${process.env.NEXT_PUBLIC_URL}/workspaces/${data._id}`,
+              }}>
+              <Button variant="secondary" size="sm" className="m-0 p-0">
+                <ShareIcon className="text-primary w-6 h-6" />
+              </Button>
+            </RWebShare>
           </div>
           <div className="mt-8">
             <Calendar

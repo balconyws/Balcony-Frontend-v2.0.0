@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { CommandBox } from '@/components/ui/command';
 import {
   workspaceActions,
+  authActions,
   workspaceSlice,
   authSlice,
   useAppDispatch,
@@ -323,8 +324,12 @@ const AddWorkspaceForm: React.FC<Props> = ({ formData, workspaceId }: Props) => 
         if (!isFailed) {
           if (user && user.role === 'admin') {
             redirect('/admin/dashboard/workspace');
-          } else {
+          } else if (user && user.role === 'host') {
             redirect('/host/dashboard/workspace');
+          } else {
+            waitForDispatch(dispatch, authActions.reAuthenticate(), () => {}).then(() =>
+              redirect('/host/dashboard/workspace')
+            );
           }
         }
       });

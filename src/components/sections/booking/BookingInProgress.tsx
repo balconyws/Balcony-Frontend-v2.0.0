@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { format } from 'date-fns';
 import { ColumnDef } from '@tanstack/react-table';
@@ -17,12 +17,13 @@ type Props = object;
 
 const BookingInProgress: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
-  const { loading, inProgress } = useAppSelector(bookingSlice.selectBooking);
+  const { inProgress } = useAppSelector(bookingSlice.selectBooking);
   const { pushToStack } = Navigation.useNavigation();
+  const [loading, setLoading] = useState<boolean>(true);
   const isTablet: boolean = useMediaQuery({ query: '(max-width: 768px)' });
 
   useEffect(() => {
-    dispatch(bookingActions.getUserInProgressBookings());
+    dispatch(bookingActions.getUserInProgressBookings()).then(() => setLoading(false));
   }, [dispatch]);
 
   const goToCancelBooking = useCallback(

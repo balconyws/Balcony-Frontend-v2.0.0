@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeftIcon } from 'lucide-react';
 
 import { Navigation } from '@/contexts';
-import { tenantActions, useAppDispatch } from '@/redux';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AwaitingReview, Renting, RentedHistory } from '..';
@@ -13,14 +11,7 @@ import { AwaitingReview, Renting, RentedHistory } from '..';
 type Props = object;
 
 const RentalManager: React.FC<Props> = () => {
-  const dispatch = useAppDispatch();
   const { popFromStack, previousPage, direction, pageVariants } = Navigation.useNavigation();
-
-  useEffect(() => {
-    dispatch(tenantActions.getUserAsTenants({ status: 'awaiting' }));
-    dispatch(tenantActions.getUserAsTenants({ status: 'renting' }));
-    dispatch(tenantActions.getUserAsTenants({ status: 'history' }));
-  }, [dispatch]);
 
   return (
     <motion.div

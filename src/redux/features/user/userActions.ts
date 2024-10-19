@@ -81,7 +81,7 @@ export const findUser = createAsyncThunk(
 
 export const getHostBalance = createAsyncThunk(
   'user/getHostBalance',
-  async (payload: { hostId: string }, { dispatch }) => {
+  async (payload: { hostId: string; type: 'workspaces' | 'properties' }, { dispatch }) => {
     const { startLoading, setBalance, setError } = userSlice;
     dispatch(startLoading());
     const res = await UserServerActions.GetHostBalance(payload);

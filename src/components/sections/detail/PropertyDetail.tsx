@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
+import { RWebShare } from 'react-web-share';
 import { ChevronsUpDownIcon, CircleXIcon, ShareIcon } from 'lucide-react';
 
 import { Navigation } from '@/contexts';
@@ -212,15 +213,20 @@ const PropertDetail: React.FC<Props> = ({ data, apiKey, styleId }: Props) => {
               <Image src="/assets/icons/ratings-2.svg" alt="rating" width={117} height={23} />
               <p className="text-[17px]">(1)</p>
             </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="m-0 p-0"
-              onClick={() =>
-                window.open(`https://web.whatsapp.com/send?text=${window.location.href}`)
-              }>
-              <ShareIcon className="text-primary w-6 h-6" />
-            </Button>
+            <RWebShare
+              data={{
+                title: data.info.name,
+                text: data.info.summary
+                  ? data.info.summary.length > 100
+                    ? data.info.summary.slice(0, 100) + '...'
+                    : data.info.summary
+                  : data.info.name,
+                url: `${process.env.NEXT_PUBLIC_URL}/properties/${data._id}`,
+              }}>
+              <Button variant="secondary" size="sm" className="m-0 p-0">
+                <ShareIcon className="text-primary w-6 h-6" />
+              </Button>
+            </RWebShare>
           </div>
           <div className="mt-12">
             <Button
@@ -316,7 +322,12 @@ const PropertDetail: React.FC<Props> = ({ data, apiKey, styleId }: Props) => {
                 <h1 className="text-[20px] leading-8 font-medium tracking-[-1px]">availability</h1>
               }
               columns={columns}
-              data={data.unitList.filter(i => i.status === 'not leased')}
+              data={data.unitList
+                .map(item => ({
+                  ...item,
+                  unit: item.unit ? item.unit.toString() : undefined,
+                }))
+                .filter(i => i.status === 'not leased')}
               showPagination={true}
               TableClassName="max-h-[50vh] lg:max-h-[60vh] overflow-y-scroll"
               showBorders={true}

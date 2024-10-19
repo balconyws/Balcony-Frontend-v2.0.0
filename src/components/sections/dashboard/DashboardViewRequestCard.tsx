@@ -8,16 +8,24 @@ import { ticketActions, useAppDispatch, ticketSlice, useAppSelector } from '@/re
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-type Props = object;
+type Props = {
+  type: 'workspaces' | 'properties';
+};
 
-const DashboardViewRequestCard: React.FC<Props> = () => {
+const DashboardViewRequestCard: React.FC<Props> = ({ type }: Props) => {
   const dispatch = useAppDispatch();
-  const { tickets } = useAppSelector(ticketSlice.selectTicket);
+  const { workspaceTickets, propertyTickets } = useAppSelector(ticketSlice.selectTicket);
   const { pushToStack, setDirection } = Navigation.useNavigation();
 
   useEffect(() => {
     dispatch(ticketActions.getAllTicket());
   }, [dispatch]);
+
+  const viewTickets = () => {
+    dispatch(ticketSlice.setTicketsType({ ticketType: type }));
+    pushToStack('support page');
+    setDirection('none');
+  };
 
   return (
     <Card className="sticky top-4 z-10 w-[174px] md:w-[188px] border border-border rounded-md box-shadow-primary">
@@ -27,14 +35,15 @@ const DashboardViewRequestCard: React.FC<Props> = () => {
           <p className="text-[#71717A] text-[13px] leading-5">open support requests</p>
         </div>
         <h1 className="mt-[6px] text-[35px] font-semibold leading-10 tracking-[-1px]">
-          {tickets ? tickets.length : 0}
+          {type === 'workspaces'
+            ? workspaceTickets
+              ? workspaceTickets.tickets.length
+              : 0
+            : type === 'properties' && propertyTickets
+              ? propertyTickets.tickets.length
+              : 0}
         </h1>
-        <Button
-          className="mt-[22px] leading-6"
-          onClick={() => {
-            pushToStack('support page');
-            setDirection('none');
-          }}>
+        <Button className="mt-[22px] leading-6" onClick={viewTickets}>
           view requests
         </Button>
       </CardContent>

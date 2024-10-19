@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { PlusIcon } from 'lucide-react';
 
@@ -15,8 +15,21 @@ type Props = object;
 
 const ActiveTickets: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
-  const { loading, tickets } = useAppSelector(ticketSlice.selectTicket);
+  const { loading, userTickets, workspaceTickets, propertyTickets, ticketsType } = useAppSelector(
+    ticketSlice.selectTicket
+  );
   const { pushToStack } = Navigation.useNavigation();
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+
+  useEffect(() => {
+    const newTickets: Ticket[] =
+      ticketsType === 'workspaces'
+        ? (workspaceTickets?.tickets ?? [])
+        : ticketsType === 'properties'
+          ? (propertyTickets?.tickets ?? [])
+          : (userTickets?.tickets ?? []);
+    setTickets(newTickets);
+  }, [propertyTickets, ticketsType, userTickets, workspaceTickets]);
 
   const goToTicket = useCallback(
     (ticket: Ticket) => {
@@ -112,20 +125,22 @@ const ActiveTickets: React.FC<Props> = () => {
                 (active)
               </span>
             </h1>
-            <Button
-              type="button"
-              variant="secondary"
-              className="!p-0 flex gap-[10px] justify-start items-center my-3"
-              onClick={addNewTicket}>
-              <div className="w-6 h-6 rounded-full border-[1.6px] border-primary flex justify-center items-center">
-                <PlusIcon className="text-primary w-[14px] h-[14px]" />
-              </div>
-              <p className="text-[13px] font-medium leading-[14px]">add new support request</p>
-            </Button>
+            {!ticketsType && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="!p-0 flex gap-[10px] justify-start items-center my-3"
+                onClick={addNewTicket}>
+                <div className="w-6 h-6 rounded-full border-[1.6px] border-primary flex justify-center items-center">
+                  <PlusIcon className="text-primary w-[14px] h-[14px]" />
+                </div>
+                <p className="text-[13px] font-medium leading-[14px]">add new support request</p>
+              </Button>
+            )}
           </>
         }
         columns={columns}
-        data={tickets || []}
+        data={tickets}
         isLoading={loading}
         minColumns={2}
         filters={{

@@ -43,11 +43,8 @@ export const replyTicket = createAsyncThunk(
     const res = await TicketServerActions.ReplyTicket(payload);
     if ('data' in res) {
       const state = getState() as RootState;
-      const prev = state.ticket.tickets || ([] as Ticket[]);
-      const updatedticket: Ticket = prev.filter(t => t._id === payload.ticketId)[0];
-      dispatch(
-        setTicketDetail({ ticketDetail: { ...updatedticket, conversation: res.data.reply } })
-      );
+      const prev = state.ticket.ticketDetail || ({} as Ticket);
+      dispatch(setTicketDetail({ ticketDetail: { ...prev, conversation: res.data.reply } }));
     } else if ('error' in res) {
       dispatch(setError({ key: res.error.key, message: res.error.message }));
     } else {
@@ -57,14 +54,34 @@ export const replyTicket = createAsyncThunk(
 );
 
 export const getAllTicket = createAsyncThunk('ticket/getAllTicket', async (_, { dispatch }) => {
-  const { startLoading, setTickets, setHistory, setError } = ticketSlice;
+  const { startLoading, setUserTickets, setWorkspaceTickets, setPropertyTickets, setError } =
+    ticketSlice;
   dispatch(startLoading());
   const res = await TicketServerActions.GetAllTickets();
   if ('data' in res) {
     const activeTickets = res.data.tickets.filter(t => t.status === 'active');
     const inactiveTickets = res.data.tickets.filter(t => t.status === 'inactive');
-    dispatch(setTickets({ tickets: activeTickets }));
-    dispatch(setHistory({ history: inactiveTickets }));
+    const workspaceActiveTickets = activeTickets.filter(t => t.workspace);
+    const workspaceInactiveTickets = inactiveTickets.filter(t => t.workspace);
+    const propertyActiveTickets = activeTickets.filter(t => t.property);
+    const propertyInactiveTickets = inactiveTickets.filter(t => t.property);
+    dispatch(setUserTickets({ userTickets: { tickets: activeTickets, history: inactiveTickets } }));
+    dispatch(
+      setWorkspaceTickets({
+        workspaceTickets: {
+          tickets: workspaceActiveTickets,
+          history: workspaceInactiveTickets,
+        },
+      })
+    );
+    dispatch(
+      setPropertyTickets({
+        propertyTickets: {
+          tickets: propertyActiveTickets,
+          history: propertyInactiveTickets,
+        },
+      })
+    );
   } else if ('error' in res) {
     dispatch(setError({ key: res.error.key, message: res.error.message }));
   } else {
@@ -80,21 +97,48 @@ export const closeTicket = createAsyncThunk(
     },
     { dispatch, getState }
   ) => {
-    const { startLoading, setTickets, setError } = ticketSlice;
+    const { startLoading, setUserTickets, setWorkspaceTickets, setPropertyTickets, setError } =
+      ticketSlice;
     dispatch(startLoading());
     const res = await TicketServerActions.CloseTicket(payload);
     if ('data' in res) {
       const state = getState() as RootState;
-      const prev = state.ticket.tickets || ([] as Ticket[]);
-      const updatedticket: Ticket[] = prev.map(t =>
-        t._id === payload.ticketId
-          ? {
-              ...t,
-              status: 'inactive',
-            }
-          : t
+      const prevUserTickets = state.ticket.userTickets?.tickets || ([] as Ticket[]);
+      const prevWorkspaceTickets = state.ticket.workspaceTickets?.tickets || ([] as Ticket[]);
+      const prevPropertyTickets = state.ticket.propertyTickets?.tickets || ([] as Ticket[]);
+      const updatedUserTickets: Ticket[] = prevUserTickets.map(t =>
+        t._id === payload.ticketId && t.status === 'active' ? { ...t, status: 'inactive' } : t
       );
-      dispatch(setTickets({ tickets: updatedticket }));
+      const updatedWorkspaceTickets: Ticket[] = prevWorkspaceTickets.map(t =>
+        t._id === payload.ticketId && t.status === 'active' ? { ...t, status: 'inactive' } : t
+      );
+      const updatedPropertyTickets: Ticket[] = prevPropertyTickets.map(t =>
+        t._id === payload.ticketId && t.status === 'active' ? { ...t, status: 'inactive' } : t
+      );
+      dispatch(
+        setUserTickets({
+          userTickets: {
+            tickets: updatedUserTickets,
+            history: state.ticket.userTickets?.history ?? [],
+          },
+        })
+      );
+      dispatch(
+        setWorkspaceTickets({
+          workspaceTickets: {
+            tickets: updatedWorkspaceTickets,
+            history: state.ticket.workspaceTickets?.history ?? [],
+          },
+        })
+      );
+      dispatch(
+        setPropertyTickets({
+          propertyTickets: {
+            tickets: updatedPropertyTickets,
+            history: state.ticket.propertyTickets?.history ?? [],
+          },
+        })
+      );
     } else if ('error' in res) {
       dispatch(setError({ key: res.error.key, message: res.error.message }));
     } else {

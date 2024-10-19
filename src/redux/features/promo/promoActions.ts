@@ -13,6 +13,7 @@ export const createPromo = createAsyncThunk(
       code: string;
       type: PromoType;
       discount: number;
+      applicableOn: 'workspace' | 'property';
     },
     { dispatch, getState }
   ) => {

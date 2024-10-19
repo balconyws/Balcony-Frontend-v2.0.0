@@ -7,6 +7,9 @@ import { motion } from 'framer-motion';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { CreateTokenBankAccountData, StripeError } from '@stripe/stripe-js';
+import { useStripe } from '@stripe/react-stripe-js';
+import { ChevronDownIcon } from 'lucide-react';
 
 import { Navigation, Cta } from '@/contexts';
 import { Tenant } from '@/types';
@@ -25,6 +28,13 @@ import {
   waitForDispatch,
 } from '@/redux';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Form,
   FormControl,
   FormField,
@@ -36,8 +46,10 @@ import {
 const formSchema = z
   .object({
     promoCode: z.string().optional(),
+    accountHolderName: z.string().optional(),
     routingNo: z.string().optional(),
     accountNo: z.string().optional(),
+    accountType: z.string().optional(),
   })
   .refine(values => !values.promoCode || values.promoCode.length >= 4, {
     message: 'Invalid code',
@@ -85,7 +97,9 @@ type Props = {
 
 const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector(tenantSlice.selectTenant);
+  const { loading, error, isLoadingBankDetails, bankAccount } = useAppSelector(
+    tenantSlice.selectTenant
+  );
   const { setOpen, pushToStack, popFromStack } = Navigation.useNavigation();
   const {
     setOpen: CtaOpenHandler,
@@ -97,12 +111,19 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
   } = Cta.useCta();
   const [activeTab, setActiveTab] = useState<Tabs>('card');
   const [resError, setResError] = useState<string>('');
+  const [confirmationLoading, setConfirmationLoading] = useState<boolean>(false);
   const prevTab = useRef<Tabs | null>(null);
   const isFirstRender = useRef(true);
+
+  const stripe = useStripe();
 
   useEffect(() => {
     isFirstRender.current = false;
   }, []);
+
+  useEffect(() => {
+    dispatch(tenantActions.getBankAccount());
+  }, [dispatch, tenant._id]);
 
   type formSchema = z.infer<typeof formSchema>;
 
@@ -110,8 +131,10 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       promoCode: '',
-      routingNo: '',
-      accountNo: '',
+      accountHolderName: bankAccount?.accountHolderName ?? '',
+      routingNo: bankAccount?.routingNo ?? '',
+      accountNo: bankAccount?.accountNo ? `**********${bankAccount.accountNo}` : '',
+      accountType: bankAccount?.accountHolderType ?? '',
     },
   });
 
@@ -128,14 +151,58 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
         form.setError(error.key as keyof formSchema, { message: error.message });
       }
       dispatch(tenantSlice.clearError());
+      setConfirmationLoading(false);
     }
   }, [dispatch, error, form]);
 
+  const handleError = (error: StripeError) => {
+    if (error.type === 'validation_error') {
+      setResError('please check your details and try again');
+    } else if (error.type === 'api_error') {
+      setResError('There was an issue connecting to our payment processor');
+    } else {
+      setResError(error.message || 'something went wrong');
+    }
+    setConfirmationLoading(false);
+  };
+
+  const onSuccess = () => {
+    setOpen(false);
+    CtaOpenHandler(true);
+    setTitle('your all set!');
+    setDescription(
+      'You should receive an email with the rental details. You can also visit the rental manager page as well.'
+    );
+    setSubmitBtnText('visit rental manager page');
+    setSubmitBtnAction(() => () => {
+      popFromStack();
+      pushToStack('rental manager');
+      CtaOpenHandler(false);
+    });
+    setCloseBtnText('done');
+  };
+
   const onSubmit: SubmitHandler<formSchema> = async (data: formSchema) => {
-    if (activeTab === 'ach' && !data.accountNo && !data.routingNo) {
-      form.setError('routingNo', { message: 'routing number is required' });
-      form.setError('accountNo', { message: 'account number is required' });
-      return;
+    setResError('');
+    if (confirmationLoading || isLoadingBankDetails) return;
+    if (activeTab === 'ach') {
+      if (!data.accountHolderName) {
+        form.setError('accountHolderName', { message: 'account holder name is required' });
+        return;
+      }
+      if (!data.accountNo) {
+        form.setError('accountNo', { message: 'account number is required' });
+        return;
+      }
+      if (!data.routingNo) {
+        form.setError('routingNo', { message: 'routing number is required' });
+        return;
+      }
+      if (!data.accountType) {
+        form.setError('accountType', { message: 'account type is required' });
+        return;
+      }
+      setConfirmationLoading(true);
     }
     await waitForDispatch(
       dispatch,
@@ -145,21 +212,83 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
         promoCode: data.promoCode,
       }),
       state => {
-        const { isFailed } = state.tenant;
+        const { isFailed, stripeClientSecret } = state.tenant;
         if (!isFailed) {
-          setOpen(false);
-          CtaOpenHandler(true);
-          setTitle('your all set!');
-          setDescription(
-            'You should receive an email with the rental details. You can also visit the rental manager page as well.'
-          );
-          setSubmitBtnText('visit rental manager page');
-          setSubmitBtnAction(() => () => {
-            popFromStack();
-            pushToStack('rental manager');
-            CtaOpenHandler(false);
-          });
-          setCloseBtnText('done');
+          if (activeTab === 'ach') {
+            if (bankAccount) {
+              onSuccess();
+              return;
+            }
+            if (stripe && stripeClientSecret) {
+              stripe
+                .confirmUsBankAccountPayment(stripeClientSecret, {
+                  payment_method: {
+                    billing_details: {
+                      name: data.accountHolderName,
+                      email: tenant.info.email,
+                      phone: tenant.info.phone,
+                    },
+                    us_bank_account: {
+                      account_number: data.accountNo ?? '',
+                      routing_number: data.routingNo ?? '',
+                      account_holder_type: data.accountType ?? '',
+                    },
+                  },
+                  return_url: `${process.env.NEXT_PUBLIC_URL}`,
+                })
+                .then(async ({ paymentIntent, error }) => {
+                  if (error) {
+                    handleError(error);
+                  } else if (paymentIntent.status === 'requires_payment_method') {
+                    setResError('It seems you canceled the bank verification');
+                  } else if (paymentIntent.status === 'requires_action') {
+                    stripe
+                      .verifyMicrodepositsForPayment(stripeClientSecret, {
+                        amounts: [32, 45],
+                      })
+                      .then(async ({ paymentIntent, error }) => {
+                        if (error) {
+                          handleError(error);
+                        }
+                        if (paymentIntent?.status === 'processing') {
+                          setResError('');
+                          const tenantAccount: CreateTokenBankAccountData = {
+                            account_holder_name: data.accountHolderName,
+                            account_number: data.accountNo ?? '',
+                            routing_number: data.routingNo ?? '',
+                            account_holder_type: data.accountType ?? '',
+                            country: 'US',
+                            currency: 'usd',
+                          };
+                          const res = await stripe.createToken('bank_account', tenantAccount);
+                          if (res.token) {
+                            await dispatch(
+                              tenantActions.addBankAccount({
+                                tenantId: tenant._id,
+                                token: res.token.id,
+                              })
+                            );
+                          } else {
+                            setResError('something went wrong');
+                          }
+                        } else {
+                          setResError('something went wrong');
+                        }
+                      })
+                      .catch(() => setResError('something went wrong'))
+                      .finally(() => setConfirmationLoading(false));
+                  } else {
+                    setResError('something went wrong');
+                    setConfirmationLoading(false);
+                  }
+                })
+                .catch(() => setResError('something went wrong'));
+            } else {
+              setResError('something went wrong');
+            }
+          } else {
+            onSuccess();
+          }
         }
       }
     );
@@ -171,6 +300,7 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
   };
 
   const handleTabChange = (value: string) => {
+    setResError('');
     prevTab.current = activeTab;
     setActiveTab(value as Tabs);
     form.clearErrors('routingNo');
@@ -204,13 +334,15 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
                 {formatCurrency((tenant.agreement?.rent ?? 0) / 100, 'usd')}
               </p>
             </div>
-            {tenant.agreement?.securityDepositFee && (
+            {tenant.agreement?.securityDepositFee ? (
               <div className="mt-3 flex justify-between items-center">
                 <p className="text-[#71717A] text-[13px] leading-5">security fee</p>
                 <p className="text-[13px] leading-5">
                   {formatCurrency(tenant.agreement.securityDepositFee / 100, 'usd')}
                 </p>
               </div>
+            ) : (
+              ''
             )}
             <div className="mt-3 flex justify-between items-center">
               <p className="text-[#71717A] text-[13px] leading-5">subtotal</p>
@@ -222,17 +354,19 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
                 )}
               </p>
             </div>
-            <div className="mt-3 flex justify-between items-center">
-              <p className="text-[#71717A] text-[13px] leading-5">service fee</p>
-              <p className="text-[13px] leading-5">{formatCurrency(5, 'usd')}</p>
-            </div>
+            {tenant.selectedUnit.property.other.chargeFeeAsAddition && (
+              <div className="mt-3 flex justify-between items-center">
+                <p className="text-[#71717A] text-[13px] leading-5">service fee</p>
+                <p className="text-[13px] leading-5">{formatCurrency(5, 'usd')}</p>
+              </div>
+            )}
             <div className="mt-3 flex justify-between items-center">
               <p className="text-[#71717A] text-[13px] font-semibold leading-5">total</p>
               <p className="text-[13px] leading-5">
                 {formatCurrency(
                   ((tenant.agreement?.rent ?? 0) + (tenant.agreement?.securityDepositFee ?? 0)) /
                     100 +
-                    5,
+                    (tenant.selectedUnit.property.other.chargeFeeAsAddition ? 5 : 0),
                   'usd'
                 )}
               </p>
@@ -241,7 +375,7 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
             <p className="mt-6 text-[13px] font-semibold leading-5">Due on or before</p>
             <div className="mt-3 flex justify-between items-center">
               <p className="text-[#71717A] text-[13px] leading-5">
-                {tenant.agreement &&
+                {tenant.agreement?.leaseStartDate &&
                   format(new Date(tenant.agreement.leaseStartDate), 'dd/MM/yyyy')}
               </p>
             </div>
@@ -250,14 +384,14 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
               <div className="flex flex-col justify-start items-start gap-3">
                 <p className="text-[13px] font-semibold leading-5">lease start date</p>
                 <p className="text-[#71717A] text-[13px] leading-5">
-                  {tenant.agreement &&
+                  {tenant.agreement?.leaseStartDate &&
                     format(new Date(tenant.agreement.leaseStartDate), 'dd/MM/yyyy')}
                 </p>
               </div>
               <div className="flex flex-col justify-start items-start gap-3">
                 <p className="text-[13px] font-semibold leading-5">lease end date</p>
                 <p className="text-[#71717A] text-[13px] leading-5">
-                  {tenant.agreement &&
+                  {tenant.agreement?.leaseEndDate &&
                     format(new Date(tenant.agreement.leaseEndDate), 'dd/MM/yyyy')}
                 </p>
               </div>
@@ -329,12 +463,36 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
                 <SlidingTabContent
                   direction={getDirection('card')}
                   animate={!isFirstRender.current}>
-                  <DefaultCard feeMsg="There is a 2.9% + 30¢ processing fee" />
+                  <DefaultCard
+                    forceToWallet={false}
+                    feeMsg="There is a 2.9% + 30¢ processing fee"
+                  />
                 </SlidingTabContent>
               </TabsContent>
               <TabsContent value="ach" className="-mx-1 px-1 overflow-hidden">
                 <SlidingTabContent direction={getDirection('ach')} animate={!isFirstRender.current}>
                   <h1 className="text-[12px] font-medium leading-5 mb-4">ACH Direct Debit</h1>
+                  <FormField
+                    control={form.control}
+                    name="accountHolderName"
+                    render={({ field }) => (
+                      <FormItem className="mb-4">
+                        <FormLabel className="text-[14px] font-medium leading-5 mb-[6px]">
+                          account holder name
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            error={isError('accountHolderName')}
+                            disabled={!!bankAccount}
+                            placeholder="enter name"
+                            className="w-full rounded-sm border border-[#CBD5E1] text-[rgba(15,23,42,0.50)] text-[14px] leading-5 placeholder:text-[rgba(15,23,42,0.50)] placeholder:text-[14px] placeholder:leading-5 focus-visible:ring-0 focus-visible:border focus-visible:border-[#CBD5E1]"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="routingNo"
@@ -347,9 +505,10 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
                           <Input
                             {...field}
                             error={isError('routingNo')}
+                            disabled={!!bankAccount}
                             type="number"
                             min={0}
-                            placeholder="3454.."
+                            placeholder="enter routing no"
                             className="w-full rounded-sm border border-[#CBD5E1] text-[rgba(15,23,42,0.50)] text-[14px] leading-5 placeholder:text-[rgba(15,23,42,0.50)] placeholder:text-[14px] placeholder:leading-5 focus-visible:ring-0 focus-visible:border focus-visible:border-[#CBD5E1]"
                           />
                         </FormControl>
@@ -369,12 +528,47 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
                           <Input
                             {...field}
                             error={isError('accountNo')}
-                            type="number"
+                            disabled={!!bankAccount}
+                            type={bankAccount ? 'text' : 'number'}
                             min={0}
-                            placeholder="2323.."
+                            placeholder="enter account no"
                             className="w-full rounded-sm border border-[#CBD5E1] text-[rgba(15,23,42,0.50)] text-[14px] leading-5 placeholder:text-[rgba(15,23,42,0.50)] placeholder:text-[14px] placeholder:leading-5 focus-visible:ring-0 focus-visible:border focus-visible:border-[#CBD5E1]"
                           />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="accountType"
+                    render={({ field: { name, value, onChange } }) => (
+                      <FormItem className="w-1/2 mt-4">
+                        <FormLabel className="text-[14px] font-medium leading-5 mb-[6px]">
+                          account holder type
+                        </FormLabel>
+                        <Select
+                          name={name}
+                          value={value}
+                          disabled={!!bankAccount}
+                          onValueChange={onChange}>
+                          <FormControl>
+                            <SelectTrigger
+                              error={isError('accountType')}
+                              className="w-full rounded-sm border text-[14px] leading-5 h-[37.6px] border-[#CBD5E1] text-[rgba(15,23,42,0.50)]"
+                              icon={
+                                <ChevronDownIcon className="text-primary opacity-50 h-4 w-4" />
+                              }>
+                              <SelectValue placeholder="select type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem defaultChecked value="individual">
+                              individual
+                            </SelectItem>
+                            <SelectItem value="company">company</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -384,12 +578,12 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
               </TabsContent>
             </Tabs>
             {resError && (
-              <p className="text-[10px] mt-6 -mb-6 font-medium text-destructive">{resError}</p>
+              <p className="text-[10px] mt-2 -mb-2 font-medium text-destructive">{resError}</p>
             )}
             <Button
               type="submit"
               className="mt-4 px-5 leading-6 font-medium w-full h-9"
-              isLoading={loading}>
+              isLoading={loading || confirmationLoading}>
               submit payment
             </Button>
             <p className="text-[8px] leading-[10px] mt-2 mb-4">

@@ -80,6 +80,7 @@ export const getStartAndEndTime = (
   if (startTime && endTime) {
     return formatTimeRange(startTime, endTime, timeZone);
   }
+  return '';
 };
 
 export const formatDateRange = (from: Date, to: Date): string => {

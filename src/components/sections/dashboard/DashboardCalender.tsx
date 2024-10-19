@@ -33,7 +33,7 @@ const DashboardCalender: React.FC<Props> = ({ border, style }: Props) => {
       <Calendar
         mode="multiple"
         numberOfMonths={style === 'lg' ? (isTablet ? 1 : 2) : isLaptop || isTablet ? 1 : 2}
-        selected={bookedDates}
+        selected={bookedDates?.map((d: string) => new Date(d))}
         className={`w-fit rounded-lg ${isTablet ? 'border border-primary' : 'border-t border-t-border'}`}
         icon={isTablet ? 'arrows' : 'badge-check'}
       />

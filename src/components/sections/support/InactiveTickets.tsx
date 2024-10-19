@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 
 import { Navigation } from '@/contexts';
@@ -13,8 +13,22 @@ import { DataTable } from '@/components/common';
 type Props = object;
 
 const InactiveTickets: React.FC<Props> = () => {
-  const { loading, history } = useAppSelector(ticketSlice.selectTicket);
+  const { loading, userTickets, workspaceTickets, propertyTickets, ticketsType } = useAppSelector(
+    ticketSlice.selectTicket
+  );
   const { pushToStack } = Navigation.useNavigation();
+
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+
+  useEffect(() => {
+    const newTickets: Ticket[] =
+      ticketsType === 'workspaces'
+        ? (workspaceTickets?.history ?? [])
+        : ticketsType === 'properties'
+          ? (propertyTickets?.history ?? [])
+          : (userTickets?.history ?? []);
+    setTickets(newTickets);
+  }, [propertyTickets, ticketsType, userTickets, workspaceTickets]);
 
   const columns: ColumnDef<Ticket>[] = useMemo(
     () => [
@@ -103,7 +117,7 @@ const InactiveTickets: React.FC<Props> = () => {
           </>
         }
         columns={columns}
-        data={history || []}
+        data={tickets}
         isLoading={loading}
         minColumns={2}
         filters={{

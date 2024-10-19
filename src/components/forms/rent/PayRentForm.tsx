@@ -261,7 +261,7 @@ const PayRentForm: React.FC<Props> = ({ tenant }: Props) => {
                       account_holder_type: data.accountType ?? '',
                     },
                   },
-                  return_url: `${process.env.NEXT_PUBLIC_URL}/verify`,
+                  return_url: `${process.env.NEXT_PUBLIC_URL}`,
                 })
                 .then(async ({ paymentIntent, error }) => {
                   if (error) {
@@ -403,14 +403,20 @@ const PayRentForm: React.FC<Props> = ({ tenant }: Props) => {
                   {formatCurrency((tenant.agreement?.rent ?? 0) / 100, 'usd')}
                 </p>
               </div>
-              <div className="mt-3 flex justify-between items-center">
-                <p className="text-[#71717A] text-[13px] leading-5">service fee</p>
-                <p className="text-[13px] leading-5">{formatCurrency(5, 'usd')}</p>
-              </div>
+              {tenant.selectedUnit.property.other.chargeFeeAsAddition && (
+                <div className="mt-3 flex justify-between items-center">
+                  <p className="text-[#71717A] text-[13px] leading-5">service fee</p>
+                  <p className="text-[13px] leading-5">{formatCurrency(5, 'usd')}</p>
+                </div>
+              )}
               <div className="mt-3 flex justify-between items-center">
                 <p className="text-[#71717A] text-[13px] font-semibold leading-5">total</p>
                 <p className="text-[13px] leading-5">
-                  {formatCurrency((tenant.agreement?.rent ?? 0) / 100 + 5, 'usd')}
+                  {formatCurrency(
+                    (tenant.agreement?.rent ?? 0) / 100 +
+                      (tenant.selectedUnit.property.other.chargeFeeAsAddition ? 5 : 0),
+                    'usd'
+                  )}
                 </p>
               </div>
               <Separator className="bg-[#E4E4E7] my-4 h-[0.8px]" />
@@ -418,8 +424,9 @@ const PayRentForm: React.FC<Props> = ({ tenant }: Props) => {
               <div className="mt-3 flex justify-between items-center">
                 <p className="text-[#71717A] text-[13px] leading-5">
                   {tenant.agreement &&
+                    tenant.lastPaymentDate &&
                     format(
-                      startOfMonth(addMonths(new Date(tenant.lastPaymentDate || Date()), 1)),
+                      startOfMonth(addMonths(new Date(tenant.lastPaymentDate), 1)),
                       'dd/MM/yyyy'
                     )}
                 </p>
@@ -429,14 +436,14 @@ const PayRentForm: React.FC<Props> = ({ tenant }: Props) => {
                 <div className="flex flex-col justify-start items-start gap-3">
                   <p className="text-[13px] font-semibold leading-5">lease start date</p>
                   <p className="text-[#71717A] text-[13px] leading-5">
-                    {tenant.agreement &&
+                    {tenant.agreement?.leaseStartDate &&
                       format(new Date(tenant.agreement.leaseStartDate), 'dd/MM/yyyy')}
                   </p>
                 </div>
                 <div className="flex flex-col justify-start items-start gap-3">
                   <p className="text-[13px] font-semibold leading-5">lease end date</p>
                   <p className="text-[#71717A] text-[13px] leading-5">
-                    {tenant.agreement &&
+                    {tenant.agreement?.leaseEndDate &&
                       format(new Date(tenant.agreement.leaseEndDate), 'dd/MM/yyyy')}
                   </p>
                 </div>
@@ -510,7 +517,10 @@ const PayRentForm: React.FC<Props> = ({ tenant }: Props) => {
                   <SlidingTabContent
                     direction={getDirection1('card')}
                     animate={!isFirstRender.current}>
-                    <DefaultCard feeMsg="There is a 2.9% + 30¢ processing fee" />
+                    <DefaultCard
+                      forceToWallet={false}
+                      feeMsg="There is a 2.9% + 30¢ processing fee"
+                    />
                   </SlidingTabContent>
                 </TabsContent>
                 <TabsContent value="ach" className="-mx-1 px-1 overflow-hidden">

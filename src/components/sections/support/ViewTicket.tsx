@@ -42,38 +42,41 @@ const ViewTicket: React.FC<Props> = () => {
             <>
               <Separator className="my-6" />
               <ScrollArea className="pb-2 h-[56vh] md:h-[81vh] lg:h-[66vh] xl:h-[74vh]">
-                {ticketDetail.conversation.map((c, i: number) => (
-                  <div key={i} className="flex flex-col mb-3">
-                    {c.from === 'user' && (
-                      <div className="p-6 rounded-lg border border-[rgba(0,84,81,0.40)] box-shadow-primary">
-                        <div className="flex justify-between items-center">
-                          <p className="text-[12px] font-medium leading-3">your request</p>
-                          <p className="text-[12px] font-medium leading-3">
-                            {format(new Date(c.sendOn), 'MMMM d, yyyy')}
+                {ticketDetail.conversation
+                  .slice()
+                  .sort((a, b) => new Date(b.sendOn).getTime() - new Date(a.sendOn).getTime())
+                  .map((c, i: number) => (
+                    <div key={i} className="flex flex-col mb-3">
+                      {c.from === 'user' && (
+                        <div className="p-6 rounded-lg border border-[rgba(0,84,81,0.40)] box-shadow-primary">
+                          <div className="flex justify-between items-center">
+                            <p className="text-[12px] font-medium leading-3">your request</p>
+                            <p className="text-[12px] font-medium leading-3">
+                              {format(new Date(c.sendOn), 'MMMM d, yyyy')}
+                            </p>
+                          </div>
+                          <Separator className="my-3" />
+                          <p className="w-full max-h-[102px] text-[13px] leading-5 multi-line-ellipsis">
+                            {c.context}
                           </p>
                         </div>
-                        <Separator className="my-3" />
-                        <p className="w-full max-h-[102px] text-[13px] leading-5 multi-line-ellipsis">
-                          {c.context}
-                        </p>
-                      </div>
-                    )}
-                    {c.from === 'host' && (
-                      <div className="p-6 rounded-lg border border-[rgba(0,84,81,0.40)] box-shadow-primary">
-                        <div className="flex justify-between items-center">
-                          <p className="text-[12px] font-medium leading-3">host response</p>
-                          <p className="text-[12px] font-medium leading-3">
-                            {format(new Date(c.sendOn), 'MMMM d, yyyy')}
+                      )}
+                      {c.from === 'host' && (
+                        <div className="p-6 rounded-lg border border-[rgba(0,84,81,0.40)] box-shadow-primary">
+                          <div className="flex justify-between items-center">
+                            <p className="text-[12px] font-medium leading-3">host response</p>
+                            <p className="text-[12px] font-medium leading-3">
+                              {format(new Date(c.sendOn), 'MMMM d, yyyy')}
+                            </p>
+                          </div>
+                          <Separator className="my-3" />
+                          <p className="w-full max-h-[102px] text-[13px] leading-5 multi-line-ellipsis">
+                            {c.context}
                           </p>
                         </div>
-                        <Separator className="my-3" />
-                        <p className="w-full max-h-[102px] text-[13px] leading-5 multi-line-ellipsis">
-                          {c.context}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  ))}
               </ScrollArea>
             </>
           )}

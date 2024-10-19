@@ -75,7 +75,8 @@ export const verifyUser = createAsyncThunk(
     },
     { dispatch }
   ) => {
-    const { startLoading, setLoading, login, setOtpDialog, setResetDialog, authError } = authSlice;
+    const { startLoading, setLoading, clearError, login, setOtpDialog, setResetDialog, authError } =
+      authSlice;
     dispatch(startLoading());
     const res = await AuthServerActions.OtpStatus();
     if ('data' in res) {
@@ -98,6 +99,7 @@ export const verifyUser = createAsyncThunk(
           dispatch(setOtpDialog({ show: false }));
         }
         dispatch(setLoading({ state: false }));
+        dispatch(clearError());
       } else if ('error' in res) {
         dispatch(authError({ key: res.error.key, message: res.error.message }));
       } else {
@@ -155,7 +157,7 @@ export const socialAuth = createAsyncThunk(
 export const forgotPassword = createAsyncThunk(
   'auth/forgotPassword',
   async (credentials: { emailOrPhone: string }, { dispatch }) => {
-    const { startLoading, setLoading, setOtpDialog, authError } = authSlice;
+    const { startLoading, setLoading, clearError, setOtpDialog, authError } = authSlice;
     dispatch(startLoading());
     const payload = {
       email: validator.isEmailValid(credentials.emailOrPhone) ? credentials.emailOrPhone : '',
@@ -165,6 +167,7 @@ export const forgotPassword = createAsyncThunk(
     if ('data' in res) {
       dispatch(setOtpDialog({ show: true, expiryTime: res.data.expiryTime, isResetRequest: true }));
       dispatch(setLoading({ state: false }));
+      dispatch(clearError());
     } else if ('error' in res) {
       dispatch(authError({ key: res.error.key, message: res.error.message }));
     } else {
@@ -176,12 +179,13 @@ export const forgotPassword = createAsyncThunk(
 export const updatePassword = createAsyncThunk(
   'auth/updatePassword',
   async (credentials: { password: string }, { dispatch }) => {
-    const { startLoading, setLoading, setResetDialog, authError } = authSlice;
+    const { startLoading, setLoading, clearError, setResetDialog, authError } = authSlice;
     dispatch(startLoading());
     const res = await AuthServerActions.UpdatePassword(credentials);
     if ('data' in res && 'success' in res.data) {
       dispatch(setResetDialog({ show: false }));
       dispatch(setLoading({ state: false }));
+      dispatch(clearError());
     } else if ('error' in res) {
       dispatch(authError({ key: res.error.key, message: res.error.message }));
     } else {

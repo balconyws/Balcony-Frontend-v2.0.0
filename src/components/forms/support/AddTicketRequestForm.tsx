@@ -7,6 +7,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { ChevronDownIcon } from 'lucide-react';
 
 import { Navigation } from '@/contexts';
+import { Booking, Tenant } from '@/types';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +48,8 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
   const { renting } = useAppSelector(tenantSlice.selectTenant);
   const { popFromStack } = Navigation.useNavigation();
   const [resError, setResError] = useState<string>('');
+  const [uniqueWorkspaces, setUniqueWorkspaces] = useState<Booking[]>([]);
+  const [uniqueProperties, setUniqueProperties] = useState<Tenant[]>([]);
 
   useEffect(() => {
     if (!ticketId) {
@@ -55,9 +58,38 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
     }
   }, [dispatch, ticketId]);
 
+  useEffect(() => {
+    if (!ticketId && inProgress) {
+      const workspaces = new Set();
+      const unique = inProgress.filter(booking => {
+        if (!workspaces.has(booking.workspace._id)) {
+          workspaces.add(booking.workspace._id);
+          return true;
+        }
+        return false;
+      });
+      setUniqueWorkspaces(unique);
+    }
+  }, [inProgress, ticketId]);
+
+  useEffect(() => {
+    if (!ticketId && renting) {
+      const properties = new Set();
+      const unique = renting.filter(tenant => {
+        const propertyId = tenant.selectedUnit.property._id;
+        if (!properties.has(propertyId)) {
+          properties.add(propertyId);
+          return true;
+        }
+        return false;
+      });
+      setUniqueProperties(unique);
+    }
+  }, [renting, ticketId]);
+
   const formSchema = z
     .object({
-      request: z.string().min(10, { message: 'write a few words' }),
+      request: z.string().min(10, { message: 'Write a few words' }),
       workspaceId: z.string().optional(),
       propertyId: z.string().optional(),
     })
@@ -66,11 +98,37 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
         if (ticketId) {
           return true;
         }
-        return data.workspaceId || data.propertyId;
+        if (uniqueWorkspaces.length === 0 && uniqueProperties.length === 0) {
+          return false;
+        }
+        if (uniqueWorkspaces.length > 0 && uniqueProperties.length > 0) {
+          return data.workspaceId || data.propertyId;
+        }
+        if (uniqueWorkspaces.length > 0) {
+          return data.workspaceId && !data.propertyId;
+        }
+        if (uniqueProperties.length > 0) {
+          return data.propertyId && !data.workspaceId;
+        }
+        return true;
       },
       {
-        message: 'either workspace or property is required',
-        path: ['workspaceId'],
+        message:
+          uniqueWorkspaces.length === 0 && uniqueProperties.length === 0
+            ? 'either workspace or property is required'
+            : uniqueWorkspaces.length > 0 && uniqueProperties.length === 0
+              ? 'workspace is required.'
+              : uniqueProperties.length > 0 && uniqueWorkspaces.length === 0
+                ? 'property is required.'
+                : 'either workspace or property is required',
+        path:
+          uniqueWorkspaces.length === 0 && uniqueProperties.length === 0
+            ? ['request']
+            : uniqueWorkspaces.length > 0 && uniqueProperties.length === 0
+              ? ['workspaceId']
+              : uniqueProperties.length > 0 && uniqueWorkspaces.length === 0
+                ? ['propertyId']
+                : ['propertyId'],
       }
     )
     .refine(
@@ -82,7 +140,7 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
       },
       {
         message: 'only one of workspace or property is allowed',
-        path: ['propertyId'],
+        path: ['workspaceId'],
       }
     );
 
@@ -112,6 +170,7 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
   }, [dispatch, error, form]);
 
   const onSubmit: SubmitHandler<formSchema> = async (data: formSchema) => {
+    setResError('');
     if (ticketId) {
       await waitForDispatch(
         dispatch,
@@ -142,6 +201,7 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
         }
       );
     }
+    form.reset();
   };
 
   return (
@@ -168,7 +228,7 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
         />
         {!ticketId && (
           <>
-            {inProgress && inProgress.length > 0 && (
+            {uniqueWorkspaces.length > 0 && (
               <FormField
                 control={form.control}
                 name="workspaceId"
@@ -187,8 +247,8 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {inProgress.map((w, i: number) => (
-                          <SelectItem key={i} value={w.workspace._id}>
+                        {uniqueWorkspaces.map(w => (
+                          <SelectItem key={w.workspace._id} value={w.workspace._id}>
                             {w.workspace.info.name}
                           </SelectItem>
                         ))}
@@ -199,7 +259,7 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
                 )}
               />
             )}
-            {renting && renting.length > 0 && (
+            {uniqueProperties.length > 0 && (
               <FormField
                 control={form.control}
                 name="propertyId"
@@ -218,8 +278,10 @@ const AddTicketRequestForm: React.FC<Props> = ({ ticketId }: Props) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {renting.map((p, i: number) => (
-                          <SelectItem key={i} value={p.selectedUnit.property._id}>
+                        {uniqueProperties.map(p => (
+                          <SelectItem
+                            key={p.selectedUnit.property._id}
+                            value={p.selectedUnit.property._id}>
                             {p.selectedUnit.property.info.name}
                           </SelectItem>
                         ))}

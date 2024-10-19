@@ -420,10 +420,14 @@ const AddPropertyForm: React.FC<Props> = ({ formData, propertyId }: Props) => {
     );
     formFilled.unitList.map(unit => {
       if (unit.floorPlanImg) {
-        formDataToSubmit.append(
-          'floorPlanImages',
-          typeof unit.floorPlanImg === 'string' ? unit.floorPlanImg : unit.floorPlanImg[0]
-        );
+        if (typeof unit.floorPlanImg === 'string') {
+          formDataToSubmit.append('floorPlanImages', unit.floorPlanImg);
+        } else {
+          formDataToSubmit.append('floorPlanImages', unit.floorPlanImg[0]);
+          if (unit._id) {
+            formDataToSubmit.append('unitIds', unit._id);
+          }
+        }
       }
     });
     if (formFilled.leasingPolicyDoc) {
@@ -594,18 +598,21 @@ const AddPropertyForm: React.FC<Props> = ({ formData, propertyId }: Props) => {
                           } else {
                             field.onChange('');
                           }
-                          setUnitList(prev => {
-                            const updatedList = [...prev];
-                            updatedList[index] = {
-                              ...updatedList[index],
-                              unit: value,
-                            };
-                            return updatedList;
-                          });
                           form.clearErrors(`unitList.${index}.price` as keyof formSchema);
                           form.clearErrors(`unitList.${index}.beds` as keyof formSchema);
                           form.clearErrors(`unitList.${index}.baths` as keyof formSchema);
                           form.clearErrors(`unitList.${index}.floorPlanImg` as keyof formSchema);
+                          form.setFocus(`unitList.${index}.unit`);
+                        }}
+                        onBlur={() => {
+                          setUnitList(prev => {
+                            const updatedList = [...prev];
+                            updatedList[index] = {
+                              ...updatedList[index],
+                              unit: field.value ? Number(field.value) : updatedList[index].unit,
+                            };
+                            return updatedList;
+                          });
                         }}
                         disabled={!unitList[index].isAvailable && !!propertyId}
                         error={isError(`unitList.${index}.unit` as keyof formSchema)}
@@ -1022,9 +1029,12 @@ const AddPropertyForm: React.FC<Props> = ({ formData, propertyId }: Props) => {
             <div className="order-1 lg:order-2 rounded-lg border border-border box-shadow-primary px-[22px] py-6">
               <h1 className="text-[24px] font-medium leading-6">processing fee*</h1>
               <p className="mt-2 text-[8px] leading-3">
-                <b>Important, please read:</b> Our payment processor, <u>Stripe</u>, charges a
-                processing fee for all ACH transfers, but the good news is that the cap they charge
-                to is up to $5.
+                <b>Important, please read:</b> Our payment processor,{' '}
+                <Link href="https://stripe.com/pricing" target="_blank" rel="noopener noreferrer">
+                  <u>Stripe</u>
+                </Link>
+                , charges a processing fee for all ACH transfers, but the good news is that the cap
+                they charge to is up to $5.
               </p>
               <p className="text-[8px] leading-3 mt-3">
                 With that being said, would you like to charge your tenants that processing fee as

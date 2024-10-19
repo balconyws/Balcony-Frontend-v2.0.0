@@ -4,7 +4,9 @@ import { io } from 'socket.io-client';
 
 import { SocketMessage } from '@/types';
 
-const socket = io();
+const socket = io(process.env.BACKEND_URL ?? '', {
+  withCredentials: true, // Include credentials for cross-origin requests
+});
 
 export const addUser = (userId: string) => socket.emit('addUser', userId);
 

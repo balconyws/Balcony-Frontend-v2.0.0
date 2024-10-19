@@ -95,6 +95,7 @@ const BookingPaymentForm: React.FC<Props> = ({ workspace, selectedDates }: Props
   }, [dispatch, error, form]);
 
   const onSubmit: SubmitHandler<formSchema> = async (data: formSchema) => {
+    setResError('');
     const startDate = selectedDates.from.toISOString();
     const endDate = selectedDates.to.toISOString();
     await waitForDispatch(
@@ -233,7 +234,7 @@ const BookingPaymentForm: React.FC<Props> = ({ workspace, selectedDates }: Props
             />
             <Separator className="bg-[#E4E4E7] my-4 h-[0.8px]" />
             <p className="text-[13px] font-semibold leading-5 mb-[14px]">Payment Information</p>
-            <DefaultCard />
+            <DefaultCard forceToWallet={false} />
             {resError && <p className="text-[10px] font-medium text-destructive">{resError}</p>}
             <Button
               type="submit"

@@ -36,10 +36,12 @@ const getLeaseAgreementPdf = async (tenant: Tenant) => {
               'usd'
             )}
             Lease Start Date: ${
-              tenant.agreement && format(new Date(tenant.agreement.leaseStartDate), 'dd/MM/yyyy')
+              tenant.agreement?.leaseStartDate &&
+              format(new Date(tenant.agreement.leaseStartDate), 'dd/MM/yyyy')
             }
             Lease End Date: ${
-              tenant.agreement && format(new Date(tenant.agreement.leaseEndDate), 'dd/MM/yyyy')
+              tenant.agreement?.leaseEndDate &&
+              format(new Date(tenant.agreement.leaseEndDate), 'dd/MM/yyyy')
             }
             Name: ${capitalizeWords(tenant.info.firstName ?? '')}${' '}${capitalizeWords(tenant.info.lastName ?? '')}
             Email: ${tenant.info.email}

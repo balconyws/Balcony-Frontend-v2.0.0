@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { isFuture, parse, format } from 'date-fns';
+import { isFuture, parseISO, format, parse } from 'date-fns';
 import InputMask from 'react-input-mask';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,9 +49,7 @@ type Props = {
 const AddCreditCardForm: React.FC<Props> = ({ card, changeTab }: Props) => {
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector(cardSlice.selectCard);
-  const [expiry, setExpiry] = useState(
-    card ? format(parse(card.expiry, 'yyyy-MM-dd', new Date()), 'MM / yy') : ''
-  );
+  const [expiry, setExpiry] = useState(card ? format(parseISO(card.expiry), 'MM / yy') : '');
   const [isInvalidExpiry, setIsInvalidExpiry] = useState(false);
   const [resError, setResError] = useState<string>('');
   const [loadingToken, setLoadingToken] = useState<boolean>(false);

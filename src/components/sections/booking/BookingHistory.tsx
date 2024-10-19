@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { ColumnDef } from '@tanstack/react-table';
 import {
@@ -22,12 +22,13 @@ type Props = object;
 
 const BookingHistory: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
-  const { loading, history } = useAppSelector(bookingSlice.selectBooking);
+  const { history } = useAppSelector(bookingSlice.selectBooking);
   const { pushToStack } = Navigation.useNavigation();
+  const [loading, setLoading] = useState<boolean>(true);
   const isTablet: boolean = useMediaQuery({ query: '(max-width: 768px)' });
 
   useEffect(() => {
-    dispatch(bookingActions.getUserHistoryBookings());
+    dispatch(bookingActions.getUserHistoryBookings()).then(() => setLoading(false));
   }, [dispatch]);
 
   const goToBookingDetail = useCallback(
@@ -164,7 +165,7 @@ const BookingHistory: React.FC<Props> = () => {
             <h1 className="text-[20px] leading-8 font-bold tracking-[-1px]">
               booking history{' '}
               <span className="text-[12px] text-primary font-normal leading-3 tracking-[-1px]">
-                (active)
+                (inactive)
               </span>
             </h1>
             <p className="text-[8px] leading-3 tracking-tighter">we hold this data up to 1 year</p>

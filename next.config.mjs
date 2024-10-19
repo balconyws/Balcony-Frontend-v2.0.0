@@ -11,10 +11,10 @@ const nextConfig = {
     FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
     FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
     FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
+    BACKEND_URL: process.env.BACKEND_URL,
     JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,
     STORAGE_ENDPOINT: process.env.STORAGE_ENDPOINT,
     STRIPE_API_KEY: process.env.STRIPE_API_KEY,
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -49,7 +49,7 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; connect-src 'self' https://*.maptiler.com https://*.googleapis.com https://*.facebook.com https://stripe.com https://*.stripe.com wss:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.googleapis.com https://*.facebook.com https://stripe.com https://*.stripe.com; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: http: blob:; font-src 'self' data: https:; frame-src 'self' https://stripe.com https://*.stripe.com; media-src 'self' https: https://*.digitaloceanspaces.com blob: https://stripe.com https://*.stripe.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; block-all-mixed-content; script-src-elem 'self' 'unsafe-inline' https:; object-src 'none'; manifest-src 'self';",
+              "default-src 'self'; connect-src 'self' http://localhost:5000 https://www.balcony.co https://balcony.co https://api.balcony.co http://balcony-server.vercel.app wss: ws: https://api.maptiler.com https://sfo3.digitaloceanspaces.com; script-src 'self' 'unsafe-eval' 'unsafe-inline' http://localhost:5000 https://www.balcony.co https://balcony.co https://api.balcony.co http://balcony-server.vercel.app https://*.googleapis.com https://*.gstatic.com; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: http: blob:; font-src 'self' data: https:; frame-src 'self' https://stripe.com https://*.stripe.com; media-src 'self' https: https://*.digitaloceanspaces.com blob:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; block-all-mixed-content; script-src-elem 'self' 'unsafe-inline' https:; object-src 'none'; manifest-src 'self';",
           },
         ],
       },
