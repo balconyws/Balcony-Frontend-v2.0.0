@@ -16,14 +16,17 @@ type Props = object;
 const OngoingBookings: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(authSlice.selectAuth);
-  const { loading, inProgress } = useAppSelector(bookingSlice.selectBooking);
+  const { inProgress } = useAppSelector(bookingSlice.selectBooking);
   const { pushToStack } = Navigation.useNavigation();
+  const [loading, setLoading] = useState<boolean>(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && user.role === 'host') {
-      dispatch(bookingActions.getHostInProgressBookings({ hostId: user._id }));
+      dispatch(bookingActions.getHostInProgressBookings({ hostId: user._id })).then(() =>
+        setLoading(false)
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);

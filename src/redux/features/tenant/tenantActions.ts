@@ -113,20 +113,36 @@ export const approveTenant = createAsyncThunk(
     },
     { dispatch, getState }
   ) => {
-    const { startLoading, setProspectTenants, setAwaitingRents, setError } = tenantSlice;
-    dispatch(startLoading());
+    const { setProspectTenants, setTenants, setError } = tenantSlice;
     const res = await TenantServerActions.ApproveTenant(payload);
     if ('data' in res && res.data.success) {
       const state = getState() as RootState;
       const prevProspectTenants = state.tenant.prospectTenants || ([] as Tenant[]);
-      const prevAwaitingRents = state.tenant.awaitingRents || ([] as Tenant[]);
+      const prevTenants = state.tenant.awaitingRents || ([] as Tenant[]);
       const approvedTenant = prevProspectTenants.find(t => t._id === payload.tenantId);
       const updatedProspectTenants = prevProspectTenants.filter(t => t._id !== payload.tenantId);
       dispatch(setProspectTenants({ tenants: updatedProspectTenants }));
       if (approvedTenant) {
+        const updatedApprovedTenant: Tenant = {
+          ...approvedTenant,
+          acceptance: 'approved',
+          agreement: {
+            rent: approvedTenant.agreement?.rent ?? 0,
+            securityDepositFee: payload.securityDepositFee
+              ? payload.securityDepositFee * 100
+              : payload.isSameAsRent
+                ? approveTenant.arguments.rent
+                : 0,
+            isRefunded: approvedTenant.agreement?.isRefunded ?? false,
+            discount: approvedTenant.agreement?.discount ?? 0,
+            leaseStartDate: payload.leaseStartDate,
+            leaseEndDate: payload.leaseEndDate,
+            renewOn: approvedTenant.agreement?.renewOn,
+          },
+        };
         dispatch(
-          setAwaitingRents({
-            tenants: [...prevAwaitingRents, { ...approvedTenant, acceptance: 'approved' }],
+          setTenants({
+            tenants: [...prevTenants, { ...updatedApprovedTenant }],
           })
         );
       }
@@ -146,8 +162,7 @@ export const rejectTenant = createAsyncThunk(
     },
     { dispatch, getState }
   ) => {
-    const { startLoading, setProspectTenants, setError } = tenantSlice;
-    dispatch(startLoading());
+    const { setProspectTenants, setError } = tenantSlice;
     const res = await TenantServerActions.RejectTenant(payload);
     if ('data' in res && res.data.success) {
       const state = getState() as RootState;

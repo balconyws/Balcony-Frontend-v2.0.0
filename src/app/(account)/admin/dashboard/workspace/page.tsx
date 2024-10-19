@@ -26,8 +26,8 @@ const AdminWorkspaceDashboard: NextPage<Props> = () => (
         <div className="mt-6 lg:mt-16 flex justify-between items-start gap-6 flex-col">
           <div className="w-full flex flex-col lg:flex-row gap-6">
             <div className="flex flex-row lg:flex-col justify-center items-center lg:justify-start lg:items-start gap-6">
-              <DashboardProgressCard type="earned" />
-              <DashboardProgressCard type="deposited" />
+              <DashboardProgressCard type="workspaces" balanceType="earned" />
+              <DashboardProgressCard type="workspaces" balanceType="deposited" />
             </div>
             <div className="flex-1">
               <DashboardChart />
@@ -38,7 +38,7 @@ const AdminWorkspaceDashboard: NextPage<Props> = () => (
               <DashboardCalender border={false} style="sm" />
               <DashboardWorkspaceManager />
               <div className="w-fit h-fit hidden lg:block">
-                <DashboardPromoCard />
+                <DashboardPromoCard applicableOn="workspace" />
               </div>
             </div>
             <div className="w-full lg:w-3/5 flex flex-col gap-6">
@@ -49,7 +49,7 @@ const AdminWorkspaceDashboard: NextPage<Props> = () => (
               </div>
             </div>
             <div className="w-fit h-fit block lg:hidden">
-              <DashboardPromoCard />
+              <DashboardPromoCard applicableOn="workspace" />
             </div>
           </div>
         </div>

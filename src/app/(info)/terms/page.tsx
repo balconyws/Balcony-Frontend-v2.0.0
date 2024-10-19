@@ -14,15 +14,15 @@ const Terms: NextPage<Props> = () => (
         </h1>
         <p className="mt-5 text-[20px]">
           These Terms of Service are for your use of the website located at{' '}
-          <Link href="https://www.balcony.ws/" className="underline">
-            https://www.balcony.ws/
+          <Link href="https://www.balcony.co/" className="underline">
+            https://www.balcony.co/
           </Link>{' '}
           and any related services provided by Balcony.
         </p>
         <p className="mt-5 text-[20px]">
           By accessing{' '}
-          <Link href="https://www.balcony.ws/" className="underline">
-            https://www.balcony.ws/
+          <Link href="https://www.balcony.co/" className="underline">
+            https://www.balcony.co/
           </Link>{' '}
           you agree to abide by these Terms of Service and to comply with all applicable business
           service agreements. If you do not agree with these Terms of Service, you are not allowed

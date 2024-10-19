@@ -117,11 +117,13 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       }
       if (page === 'menu') {
         navigationStack.empty();
+        setCurrentPage(navigationStack.getTop());
+        setPreviousPage(navigationStack.getSecondTop());
       }
       setOpen(true);
       setDirection('right');
       setDataPassed(dataToPass);
-      if (currentPage === page) return;
+      if (navigationStack.getTop() === page) return;
       navigationStack.push(page);
       setCurrentPage(navigationStack.getTop());
       setPreviousPage(navigationStack.getSecondTop());

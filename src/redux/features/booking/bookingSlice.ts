@@ -68,7 +68,7 @@ const bookingSlice = createSlice({
       state.error = undefined;
       state.isFailed = false;
     },
-    setBookedDates: (state, action: PayloadAction<{ dates: Date[] }>) => {
+    setBookedDates: (state, action: PayloadAction<{ dates: string[] }>) => {
       state.loading = false;
       state.bookedDates = action.payload.dates;
       state.error = undefined;

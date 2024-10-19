@@ -53,6 +53,8 @@ export type User = {
   image?: string;
   role: Role;
   status: Status;
+  isWorkspaceAccountConnected: boolean;
+  isPropertyAccountConnected: boolean;
 };
 
 export type AuthState = {
@@ -338,6 +340,7 @@ export type Promo = {
   code: string;
   type: PromoType;
   discount: number;
+  applicableOn: 'workspace' | 'property';
 };
 
 export type PromoState = {
@@ -381,7 +384,7 @@ export type BookingState = {
     workspace: Workspace;
     selectedDates: { from: string; to: string };
   };
-  bookedDates?: Date[];
+  bookedDates?: string[];
   error?: { key: string; message: string };
 };
 
@@ -438,9 +441,9 @@ export type Tenant = {
     securityDepositFee: number;
     isRefunded: boolean;
     discount: number;
-    leaseStartDate: string;
-    leaseEndDate: string;
-    renewOn: string;
+    leaseStartDate?: string;
+    leaseEndDate?: string;
+    renewOn?: string;
   };
   paymentSource: PaymentType;
   lastPaymentDate?: string;
@@ -503,9 +506,20 @@ export type Ticket = {
 export type TicketState = {
   loading: boolean;
   isFailed: boolean;
-  tickets?: Ticket[];
-  history?: Ticket[];
+  userTickets?: {
+    tickets: Ticket[];
+    history: Ticket[];
+  };
+  workspaceTickets?: {
+    tickets: Ticket[];
+    history: Ticket[];
+  };
+  propertyTickets?: {
+    tickets: Ticket[];
+    history: Ticket[];
+  };
   ticketDetail?: Ticket;
+  ticketsType?: 'workspaces' | 'properties';
   error?: { key: string; message: string };
 };
 

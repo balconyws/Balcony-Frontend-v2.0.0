@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import {
   BanIcon,
@@ -21,13 +21,16 @@ type Props = object;
 
 const PastBookings: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
-  const { loading, history } = useAppSelector(bookingSlice.selectBooking);
+  const { history } = useAppSelector(bookingSlice.selectBooking);
   const { user } = useAppSelector(authSlice.selectAuth);
   const { pushToStack } = Navigation.useNavigation();
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (user && user.role === 'host') {
-      dispatch(bookingActions.getHostHistoryBookings({ hostId: user._id }));
+      dispatch(bookingActions.getHostHistoryBookings({ hostId: user._id })).then(() =>
+        setLoading(false)
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);

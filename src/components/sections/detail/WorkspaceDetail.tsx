@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { DateRange } from 'react-day-picker';
+import { RWebShare } from 'react-web-share';
 import { ShareIcon } from 'lucide-react';
 
 import { Navigation } from '@/contexts';
@@ -157,7 +158,7 @@ const WorkspaceDetail: React.FC<Props> = ({ data, apiKey, styleId }: Props) => {
               <SingleColumnTable
                 type="bookingInfo"
                 data={[
-                  `${formatCurrency(data.pricing.totalPerDay, 'usd')} per person`,
+                  `${(formatCurrency(data.pricing.totalPerDay), 'usd')} per person`,
                   `${data.other.additionalGuests} extra guests allowed`,
                 ]}
               />
@@ -184,15 +185,20 @@ const WorkspaceDetail: React.FC<Props> = ({ data, apiKey, styleId }: Props) => {
               <Image src="/assets/icons/ratings-2.svg" alt="rating" width={117} height={23} />
               <p className="text-[17px]">(1)</p>
             </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="m-0 p-0"
-              onClick={() =>
-                window.open(`https://web.whatsapp.com/send?text=${window.location.href}`)
-              }>
-              <ShareIcon className="text-primary w-6 h-6" />
-            </Button>
+            <RWebShare
+              data={{
+                title: data.info.name,
+                text: data.info.summary
+                  ? data.info.summary.length > 100
+                    ? data.info.summary.slice(0, 100) + '...'
+                    : data.info.summary
+                  : data.info.name,
+                url: `${process.env.NEXT_PUBLIC_URL}/workspaces/${data._id}`,
+              }}>
+              <Button variant="secondary" size="sm" className="m-0 p-0">
+                <ShareIcon className="text-primary w-6 h-6" />
+              </Button>
+            </RWebShare>
           </div>
           <div className="mt-8">
             <Calendar

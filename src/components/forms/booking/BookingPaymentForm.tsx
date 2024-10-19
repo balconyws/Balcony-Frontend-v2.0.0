@@ -95,6 +95,7 @@ const BookingPaymentForm: React.FC<Props> = ({ workspace, selectedDates }: Props
   }, [dispatch, error, form]);
 
   const onSubmit: SubmitHandler<formSchema> = async (data: formSchema) => {
+    setResError('');
     const startDate = selectedDates.from.toISOString();
     const endDate = selectedDates.to.toISOString();
     await waitForDispatch(

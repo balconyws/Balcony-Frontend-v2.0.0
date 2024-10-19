@@ -20,9 +20,11 @@ import {
   waitForDispatch,
 } from '@/redux';
 
-type Props = object;
+type Props = {
+  applicableOn: 'workspace' | 'property';
+};
 
-const DashboardPromoCard: React.FC<Props> = () => {
+const DashboardPromoCard: React.FC<Props> = ({ applicableOn }: Props) => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(authSlice.selectAuth);
   const { promos: storedPromos } = useAppSelector(promoSlice.selectPromo);
@@ -56,15 +58,15 @@ const DashboardPromoCard: React.FC<Props> = () => {
 
   useEffect(() => {
     if (storedPromos) {
-      setPromos([...storedPromos]);
+      setPromos([...storedPromos].filter(p => p.applicableOn === applicableOn));
       setPromoErrors(Array(storedPromos.length).fill({ code: false, discount: false }));
     }
-  }, [storedPromos]);
+  }, [applicableOn, storedPromos]);
 
   const addNewPromo = () => {
     setPromos(prev => [
       ...prev,
-      { _id: new Date().toISOString(), code: '', type: 'percentage', discount: 1 },
+      { _id: new Date().toISOString(), code: '', type: 'percentage', discount: 1, applicableOn },
     ]);
     setPromoErrors(prev => [...prev, { code: false, discount: false }]);
   };

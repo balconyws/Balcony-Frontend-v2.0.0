@@ -91,7 +91,7 @@ type Props = {
 
 const TenantApprovalForm: React.FC<Props> = ({ data }: Props) => {
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector(tenantSlice.selectTenant);
+  const { error } = useAppSelector(tenantSlice.selectTenant);
   const { loading: chatLoading } = useAppSelector(chatSlice.selectChat);
   const { setOpen, pushToStack } = Navigation.useNavigation();
   const {
@@ -104,6 +104,7 @@ const TenantApprovalForm: React.FC<Props> = ({ data }: Props) => {
   } = Cta.useCta();
 
   const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isAccepting, setIsAccepting] = useState<boolean>(false);
   const [isRejecting, setIsRejecting] = useState<boolean>(false);
   const [resError, setResError] = useState<string>('');
 
@@ -143,6 +144,7 @@ const TenantApprovalForm: React.FC<Props> = ({ data }: Props) => {
   const onSubmit: SubmitHandler<formSchema> = async (formData: formSchema) => {
     setResError('');
     if (isRejecting || data.isViewOnly) return;
+    setIsAccepting(true);
     await waitForDispatch(
       dispatch,
       tenantActions.approveTenant({
@@ -170,11 +172,12 @@ const TenantApprovalForm: React.FC<Props> = ({ data }: Props) => {
         }
       }
     );
+    setIsAccepting(false);
   };
 
   const onDisApproved = async () => {
     setResError('');
-    if (loading || data.isViewOnly) return;
+    if (isAccepting || data.isViewOnly) return;
     setIsRejecting(true);
     await waitForDispatch(
       dispatch,
@@ -196,10 +199,10 @@ const TenantApprovalForm: React.FC<Props> = ({ data }: Props) => {
           setCloseBtnText('done');
         } else {
           setResError(error?.message || 'something went wrong');
-          setIsRejecting(false);
         }
       }
     );
+    setIsRejecting(false);
   };
 
   const openFile = (url?: string) => {
@@ -523,7 +526,7 @@ const TenantApprovalForm: React.FC<Props> = ({ data }: Props) => {
                       className="leading-6 w-full h-10 !text-[12px]"
                       onClick={onDisApproved}
                       isLoading={isRejecting}
-                      disabled={loading || data.isViewOnly}>
+                      disabled={isAccepting || data.isViewOnly}>
                       disapprove application
                     </Button>
                     <p className="mt-2 mb-6 text-[8px] leading-[10px]">
@@ -537,7 +540,7 @@ const TenantApprovalForm: React.FC<Props> = ({ data }: Props) => {
                       type="submit"
                       variant="default"
                       className="leading-6 w-full h-10 !text-[12px]"
-                      isLoading={loading}
+                      isLoading={isAccepting}
                       disabled={isRejecting || data.isViewOnly}>
                       proceed to next phase
                     </Button>

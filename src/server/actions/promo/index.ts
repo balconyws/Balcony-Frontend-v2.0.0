@@ -74,6 +74,7 @@ export const CreatePromo = async (payload: {
   code: string;
   type: PromoType;
   discount: number;
+  applicableOn: 'workspace' | 'property';
 }): Promise<
   | {
       data: {

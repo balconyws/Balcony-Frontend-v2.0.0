@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SearchIcon, ChevronLeftIcon, UserIcon } from 'lucide-react';
 
 import { Navigation } from '@/contexts';
@@ -20,6 +20,10 @@ const Navbar: React.FC<Props> = () => {
   const { isAuthenticated } = useAppSelector(authSlice.selectAuth);
   const { pushToStack, setDirection } = Navigation.useNavigation();
   const [tab, setTab] = useState<'user' | 'host'>(pathname.startsWith('/host') ? 'host' : 'user');
+
+  useEffect(() => {
+    setTab(pathname.startsWith('/host') ? 'host' : 'user');
+  }, [pathname]);
 
   return (
     <header className="fixed z-20 flex justify-center items-center w-full pt-5">

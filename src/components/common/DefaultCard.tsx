@@ -31,7 +31,11 @@ const DefaultCard = ({ forceToWallet, feeMsg, onClickUpdate }: Props) => {
   }, [cards, forceToWallet, pushToStack]);
 
   if (loading) {
-    <Spinner show={true} size="medium" />;
+    return (
+      <div className="flex justify-center items-center w-full">
+        <Spinner show={true} size="medium" strokeColor="#005451" />
+      </div>
+    );
   }
 
   return (
@@ -70,7 +74,12 @@ const DefaultCard = ({ forceToWallet, feeMsg, onClickUpdate }: Props) => {
           <Button
             variant="underline"
             className="text-[12px] font-normal border-none underline w-fit text-center"
-            onClick={() => pushToStack('wallet')}>
+            onClick={() => {
+              pushToStack('wallet');
+              if (onClickUpdate) {
+                onClickUpdate();
+              }
+            }}>
             add
           </Button>
         </div>

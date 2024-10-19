@@ -53,7 +53,7 @@ type Props = {
 const BookingRefundForm: React.FC<Props> = ({ booking }: Props) => {
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector(bookingSlice.selectBooking);
-  const { setOpen, pushToStack, popFromStack } = Navigation.useNavigation();
+  const { setOpen } = Navigation.useNavigation();
   const [resError, setResError] = useState<string>('');
   const [canceling, setCanceling] = useState<boolean>(false);
   const {
@@ -108,12 +108,8 @@ const BookingRefundForm: React.FC<Props> = ({ booking }: Props) => {
           CtaOpenHandler(true);
           setTitle('your all set!');
           setDescription('The customer should receive an email regarding the partial refund.');
-          setSubmitBtnText('visit booking details page');
-          setSubmitBtnAction(() => () => {
-            popFromStack();
-            pushToStack('all booking');
-            CtaOpenHandler(false);
-          });
+          setSubmitBtnText(null);
+          setSubmitBtnAction(() => () => {});
           setCloseBtnText('done');
         }
       }
@@ -135,12 +131,8 @@ const BookingRefundForm: React.FC<Props> = ({ booking }: Props) => {
           CtaOpenHandler(true);
           setTitle('');
           setDescription('The customer should receive an email with the cancellation & refund.');
-          setSubmitBtnText('visit booking details page');
-          setSubmitBtnAction(() => () => {
-            popFromStack();
-            pushToStack('all booking');
-            CtaOpenHandler(false);
-          });
+          setSubmitBtnText(null);
+          setSubmitBtnAction(() => () => {});
           setCloseBtnText('done');
         }
         setCanceling(false);

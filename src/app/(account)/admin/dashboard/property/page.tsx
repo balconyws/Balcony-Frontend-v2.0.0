@@ -25,8 +25,8 @@ const AdminPropertyDashboard: NextPage<Props> = () => (
         <div className="mt-6 lg:mt-16 flex justify-between items-start gap-6 flex-col">
           <div className="w-full flex flex-col lg:flex-row gap-6">
             <div className="flex flex-row lg:flex-col justify-center items-center lg:justify-start lg:items-start gap-6">
-              <DashboardProgressCard type="earned" />
-              <DashboardProgressCard type="deposited" />
+              <DashboardProgressCard type="properties" balanceType="earned" />
+              <DashboardProgressCard type="properties" balanceType="deposited" />
             </div>
             <div className="flex-1">
               <DashboardChart />
@@ -36,7 +36,7 @@ const AdminPropertyDashboard: NextPage<Props> = () => (
             <div className="w-full lg:w-1/3 xl:w-1/4 flex flex-col gap-6">
               <DashboardProspectTenant />
               <div className="w-fit h-fit hidden lg:flex flex-col gap-6">
-                <DashboardPromoCard />
+                <DashboardPromoCard applicableOn="property" />
                 <DashboardUsersData />
               </div>
             </div>
@@ -48,7 +48,7 @@ const AdminPropertyDashboard: NextPage<Props> = () => (
               <DashboardHostData />
             </div>
             <div className="w-fit h-fit block lg:hidden">
-              <DashboardPromoCard />
+              <DashboardPromoCard applicableOn="property" />
             </div>
           </div>
         </div>

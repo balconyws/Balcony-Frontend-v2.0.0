@@ -71,13 +71,13 @@ const formSchema = z.object({
   moveInRequest: z.date({
     required_error: 'move-in request is required',
   }),
-  note: z
+  note: z.string().optional(),
+  socialSecurityNo: z
     .string()
     .optional()
     .refine(ssn => ssn === '' || (ssn && validator.isValidSocialSecurityNo(ssn)), {
       message: 'invalid security number',
     }),
-  socialSecurityNo: z.string().optional(),
   terms: z.boolean().refine(val => val === true, {
     message: 'must agree to continue.',
   }),
