@@ -56,6 +56,10 @@ const OTPForm: React.FC<Props> = () => {
     },
   });
 
+  useEffect(() => {
+    setResError('');
+  }, []);
+
   const isError = (inputName: keyof formSchema): boolean => {
     const fieldState = form.getFieldState(inputName);
     return !!fieldState.error;

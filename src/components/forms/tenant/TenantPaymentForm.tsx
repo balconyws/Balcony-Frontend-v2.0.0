@@ -241,7 +241,6 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
                     handleError(error);
                   } else if (paymentIntent.status === 'requires_payment_method') {
                     setResError('It seems you canceled the bank verification');
-                    setConfirmationLoading(false);
                   } else if (paymentIntent.status === 'requires_action') {
                     stripe
                       .verifyMicrodepositsForPayment(stripeClientSecret, {
@@ -301,6 +300,7 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
   };
 
   const handleTabChange = (value: string) => {
+    setResError('');
     prevTab.current = activeTab;
     setActiveTab(value as Tabs);
     form.clearErrors('routingNo');
@@ -334,13 +334,15 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
                 {formatCurrency((tenant.agreement?.rent ?? 0) / 100, 'usd')}
               </p>
             </div>
-            {tenant.agreement?.securityDepositFee && (
+            {tenant.agreement?.securityDepositFee ? (
               <div className="mt-3 flex justify-between items-center">
                 <p className="text-[#71717A] text-[13px] leading-5">security fee</p>
                 <p className="text-[13px] leading-5">
                   {formatCurrency(tenant.agreement.securityDepositFee / 100, 'usd')}
                 </p>
               </div>
+            ) : (
+              ''
             )}
             <div className="mt-3 flex justify-between items-center">
               <p className="text-[#71717A] text-[13px] leading-5">subtotal</p>
@@ -581,7 +583,7 @@ const TenantPaymentForm: React.FC<Props> = ({ tenant }: Props) => {
             <Button
               type="submit"
               className="mt-4 px-5 leading-6 font-medium w-full h-9"
-              isLoading={loading}>
+              isLoading={loading || confirmationLoading}>
               submit payment
             </Button>
             <p className="text-[8px] leading-[10px] mt-2 mb-4">

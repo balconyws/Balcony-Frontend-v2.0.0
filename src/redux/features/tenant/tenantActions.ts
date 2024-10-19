@@ -118,7 +118,7 @@ export const approveTenant = createAsyncThunk(
     if ('data' in res && res.data.success) {
       const state = getState() as RootState;
       const prevProspectTenants = state.tenant.prospectTenants || ([] as Tenant[]);
-      const prevTenants = state.tenant.awaitingRents || ([] as Tenant[]);
+      const prevTenants = state.tenant.tenants || ([] as Tenant[]);
       const approvedTenant = prevProspectTenants.find(t => t._id === payload.tenantId);
       const updatedProspectTenants = prevProspectTenants.filter(t => t._id !== payload.tenantId);
       dispatch(setProspectTenants({ tenants: updatedProspectTenants }));
@@ -131,7 +131,7 @@ export const approveTenant = createAsyncThunk(
             securityDepositFee: payload.securityDepositFee
               ? payload.securityDepositFee * 100
               : payload.isSameAsRent
-                ? approveTenant.arguments.rent
+                ? (approvedTenant.agreement?.rent ?? 0)
                 : 0,
             isRefunded: approvedTenant.agreement?.isRefunded ?? false,
             discount: approvedTenant.agreement?.discount ?? 0,
