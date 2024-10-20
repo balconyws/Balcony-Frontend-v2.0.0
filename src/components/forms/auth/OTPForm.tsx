@@ -58,7 +58,9 @@ const OTPForm: React.FC<Props> = () => {
 
   useEffect(() => {
     setResError('');
-  }, []);
+    form.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [show]);
 
   const isError = (inputName: keyof formSchema): boolean => {
     const fieldState = form.getFieldState(inputName);
@@ -101,7 +103,7 @@ const OTPForm: React.FC<Props> = () => {
   };
 
   const handleResendOtp = async () => {
-    form.clearErrors('passCode');
+    form.reset();
     setResError('');
     setIsSending(true);
     await dispatch(authActions.resendOtp());
@@ -143,6 +145,10 @@ const OTPForm: React.FC<Props> = () => {
                     <FormControl>
                       <Input
                         {...field}
+                        onChange={e => {
+                          field.onChange(e);
+                          setResError('');
+                        }}
                         error={isError('passCode')}
                         type="password"
                         placeholder="enter passcode"
@@ -165,9 +171,11 @@ const OTPForm: React.FC<Props> = () => {
                   type="button"
                   variant="outline"
                   className="leading-6 border-[#E2E8F0]"
-                  onClick={() =>
-                    dispatch(authSlice.setOtpDialog({ show: false, expiryTime: undefined }))
-                  }>
+                  onClick={() => {
+                    setResError('');
+                    form.reset();
+                    dispatch(authSlice.setOtpDialog({ show: false, expiryTime: undefined }));
+                  }}>
                   Cancel
                 </Button>
               </DialogClose>

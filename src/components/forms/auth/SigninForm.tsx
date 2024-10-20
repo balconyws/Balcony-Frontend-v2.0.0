@@ -165,9 +165,9 @@ const SigninForm: React.FC<Props> = () => {
       <div className="flex justify-center items-center">
         <div className="w-[90%]">
           <div className="my-10 w-full flex justify-center items-center gap-[10px]">
-            <Separator className="w-[29%]" />
+            <Separator className="flex-1" />
             <p className="text-[12px] leading-4">OR CONTINUE WITH</p>
-            <Separator className="w-[29%]" />
+            <Separator className="flex-1" />
           </div>
           <div className="w-full flex justify-center items-center gap-6">
             <Button

@@ -53,6 +53,8 @@ const UpdatePasswordForm: React.FC<Props> = () => {
 
   useEffect(() => {
     setResError('');
+    form.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isError = (inputName: keyof formSchema): boolean => {
@@ -97,6 +99,10 @@ const UpdatePasswordForm: React.FC<Props> = () => {
                       <div className="relative col-span-3 w-full flex items-center">
                         <Input
                           {...field}
+                          onChange={e => {
+                            field.onChange(e);
+                            setResError('');
+                          }}
                           error={isError('password')}
                           type={isVisible ? 'text' : 'password'}
                           placeholder="enter your password"
@@ -130,7 +136,11 @@ const UpdatePasswordForm: React.FC<Props> = () => {
                   type="button"
                   variant="outline"
                   className="leading-6 border-[#E2E8F0]"
-                  onClick={() => dispatch(authSlice.setResetDialog({ show: false }))}>
+                  onClick={() => {
+                    setResError('');
+                    form.reset();
+                    dispatch(authSlice.setResetDialog({ show: false }));
+                  }}>
                   Cancel
                 </Button>
               </DialogClose>

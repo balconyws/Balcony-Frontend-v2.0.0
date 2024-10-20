@@ -20,10 +20,8 @@ export const signupUser = createAsyncThunk(
     dispatch(startLoading());
     const res = await AuthServerActions.Signup(credentials);
     if ('data' in res) {
-      doSigninWithPhoneNumber(credentials.phone)
-        .then(confirmationResult => {
-          window.confirmationResult = confirmationResult;
-        })
+      await doSigninWithPhoneNumber(credentials.phone)
+        .then(confirmationResult => (window.confirmationResult = confirmationResult))
         .catch(() => {});
       dispatch(setOtpDialog({ show: true, expiryTime: res.data.expiryTime }));
       dispatch(setLoading({ state: false }));
@@ -39,10 +37,8 @@ export const resendOtp = createAsyncThunk('auth/resendOtp', async (_, { dispatch
   const { setOtpDialog, authError } = authSlice;
   const res = await AuthServerActions.ResendOtp();
   if ('data' in res) {
-    doSigninWithPhoneNumber(res.data.phone)
-      .then(confirmationResult => {
-        window.confirmationResult = confirmationResult;
-      })
+    await doSigninWithPhoneNumber(res.data.phone)
+      .then(confirmationResult => (window.confirmationResult = confirmationResult))
       .catch(() => {});
     dispatch(setOtpDialog({ show: true, expiryTime: res.data.expiryTime }));
   } else if ('error' in res) {
@@ -80,7 +76,7 @@ export const verifyUser = createAsyncThunk(
     dispatch(startLoading());
     const res = await AuthServerActions.OtpStatus();
     if ('data' in res) {
-      if (res.data.expiryTime < new Date().getTime() || res.data.attempts > 2) {
+      if (res.data.expiryTime < new Date().getTime()) {
         dispatch(setLoading({ state: false }));
         dispatch(authError({ key: '', message: 'otp has expired' }));
         return;
