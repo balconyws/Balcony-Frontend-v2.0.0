@@ -1,14 +1,17 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { BedSingleIcon, BathIcon } from 'lucide-react';
 
+import { GeocodingControl, GeocodingEvent } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
@@ -20,9 +23,6 @@ import {
 
 const formSchema = z
   .object({
-    place: z.string().min(2, {
-      message: 'Place is required',
-    }),
     beds: z
       .string()
       .optional()
@@ -61,13 +61,17 @@ type Props = object;
 
 const PropertiesForm: React.FC<Props> = () => {
   const router = useRouter();
+  const [place, setPlace] = useState<string>('');
+  const [error, setError] = useState<string>('');
+
+  const divRef = useRef<HTMLDivElement>(null);
+  const geocodingControlRef = useRef<GeocodingControl | null>(null);
 
   type formSchema = z.infer<typeof formSchema>;
 
   const form = useForm<formSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      place: '',
       beds: '',
       baths: '',
       minRange: '',
@@ -81,28 +85,44 @@ const PropertiesForm: React.FC<Props> = () => {
   };
 
   const onSubmit: SubmitHandler<formSchema> = (data: formSchema) => {
+    setError('');
+    if (!place) {
+      setError('place is required');
+      return;
+    }
     router.push(
-      `/properties?place=${data.place}&beds=${data.beds}&baths=${data.baths}&minrange=${data.minRange}&maxrange=${data.maxRange}`
+      `/properties?place=${place}&beds=${data.beds}&baths=${data.baths}&minrange=${data.minRange}&maxrange=${data.maxRange}`
     );
   };
 
+  useEffect(() => {
+    if (!geocodingControlRef.current) {
+      geocodingControlRef.current = new GeocodingControl({
+        target: divRef.current,
+        apiKey: process.env.MAP_API_KEY,
+      });
+    }
+    const handlePick = (e: GeocodingEvent) => {
+      if (e.detail?.place_name) {
+        setPlace(e.detail.place_name.toLowerCase());
+      }
+    };
+    geocodingControlRef.current.addEventListener('pick', handlePick);
+    return () => {
+      if (geocodingControlRef.current) {
+        geocodingControlRef.current.removeEventListener('pick', handlePick);
+      }
+      geocodingControlRef.current = null;
+    };
+  }, []);
+
   return (
     <div>
+      <Label className={`${error && '!text-destructive'}`}>place</Label>
+      <div ref={divRef} data-error={!!error} className="mt-1 mb-2"></div>
+      {error && <p className="text-[10px] my-1 font-medium text-destructive">{error}</p>}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="place"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>place*</FormLabel>
-                <FormControl>
-                  <Input {...field} error={isError('place')} placeholder="city" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <FormField
             control={form.control}
             name="beds"
